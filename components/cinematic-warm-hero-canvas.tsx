@@ -273,9 +273,7 @@ export function CinematicWarmHeroCanvas() {
   }, [useFrames, heroReady, maxFrame])
 
   useEffect(() => {
-    if (!useFrames || !heroReady || !containerRef.current || !canvasRef.current) return
-    const container = containerRef.current
-    const canvas = canvasRef.current
+    if (!useFrames || !heroReady || maxFrame < 0) return
     const cache = cacheRef.current
 
     function getClosestFrame(want: number): number {
@@ -288,6 +286,12 @@ export function CinematicWarmHeroCanvas() {
     }
 
     function draw() {
+      const container = containerRef.current
+      const canvas = canvasRef.current
+      if (!container || !canvas) {
+        rafRef.current = requestAnimationFrame(draw)
+        return
+      }
       const rect = container.getBoundingClientRect()
       const w = rect.width
       const h = rect.height
