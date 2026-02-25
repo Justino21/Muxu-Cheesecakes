@@ -29,33 +29,37 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 }
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://muxucheesecakes.com"
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Muxu Cheesecake | Handcrafted Holiday Indulgence",
   description:
     "Premium handcrafted cheesecakes made with love. Limited edition holiday flavors available now. Experience the warmth of homemade luxury.",
   generator: "v0.app",
   keywords: ["cheesecake", "holiday dessert", "premium", "handcrafted", "Christmas", "gift"],
   icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
+    icon: "/Muxu_Logo.png",
+    apple: "/Muxu_Logo.png",
   },
   openGraph: {
     title: "Muxu Cheesecake | Handcrafted Holiday Indulgence",
     description: "Premium handcrafted cheesecakes made with love",
     type: "website",
+    images: [
+      {
+        url: "/Muxu_Logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Muxu Cheesecakes",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Muxu Cheesecake | Handcrafted Holiday Indulgence",
+    description: "Premium handcrafted cheesecakes made with love",
+    images: ["/Muxu_Logo.png"],
   },
 }
 
