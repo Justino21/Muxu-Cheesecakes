@@ -71,11 +71,11 @@ export function CinematicWarmHero() {
   const scrollToNext = useCallback(() => {
     programmaticScrollRef.current = true
     const y = typeof window !== "undefined" ? window.innerHeight : 0
+    window.scrollTo({ top: y, behavior: "auto" })
     if (lenis) {
       lenis.start()
-      lenis.scrollTo(y, { lerp: 0.1, force: true })
+      lenis.scrollTo(y, { force: true, duration: 0.15 })
     }
-    window.scrollTo({ top: y, behavior: "smooth" })
     setTimeout(() => {
       programmaticScrollRef.current = false
     }, 800)
@@ -89,8 +89,8 @@ export function CinematicWarmHero() {
 
   useEffect(() => {
     if (!lenis) return
-    const onScroll = () => {
-      const y = typeof window !== "undefined" ? window.scrollY : 0
+    const onScroll = (scrollY?: number) => {
+      const y = scrollY ?? (typeof window !== "undefined" ? window.scrollY : 0)
       if (programmaticScrollRef.current) {
         lenis.start()
         return
@@ -99,9 +99,14 @@ export function CinematicWarmHero() {
       else if (y < 80 && locked) lenis.stop()
       else lenis.start()
     }
+    const onWindowScroll = () => onScroll()
     onScroll()
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
+    const unsub = lenis.on("scroll", () => onScroll(lenis.scroll))
+    window.addEventListener("scroll", onWindowScroll, { passive: true })
+    return () => {
+      unsub()
+      window.removeEventListener("scroll", onWindowScroll)
+    }
   }, [lenis, locked])
 
   // Load meta and frame 0, then show hero so first paint is not black
@@ -148,7 +153,8 @@ export function CinematicWarmHero() {
 
   const onWheel = useCallback(
     (e: WheelEvent) => {
-      if (window.scrollY > 100) return
+      const scrollY = typeof window !== "undefined" ? (lenis ? lenis.scroll : window.scrollY) : 0
+      if (scrollY > 100) return
       if (!locked) return
       const max = (frameCount || 1) - 1
       if (e.deltaY > 0) {
@@ -172,12 +178,13 @@ export function CinematicWarmHero() {
         if (frameIndex > 0) {
           e.preventDefault()
           playToStart()
-        } else if (window.scrollY > 0) {
+        } else if (scrollY > 0) {
+          if (lenis) lenis.start()
           window.scrollTo({ top: 0, behavior: "smooth" })
         }
       }
     },
-    [locked, frameIndex, frameCount, isAnimating, scrollToNext, playToEnd, playToStart]
+    [lenis, locked, frameIndex, frameCount, isAnimating, scrollToNext, playToEnd, playToStart]
   )
 
   const onTouchStart = useCallback((e: TouchEvent) => {
@@ -186,7 +193,8 @@ export function CinematicWarmHero() {
 
   const onTouchMove = useCallback(
     (e: TouchEvent) => {
-      if (window.scrollY > 100) return
+      const scrollY = typeof window !== "undefined" ? (lenis ? lenis.scroll : window.scrollY) : 0
+      if (scrollY > 100) return
       if (!locked) return
       const max = (frameCount || 1) - 1
       const dy = touchY.current - e.touches[0].clientY
@@ -213,12 +221,13 @@ export function CinematicWarmHero() {
         if (frameIndex > 0) {
           e.preventDefault()
           playToStart()
-        } else if (window.scrollY > 0) {
+        } else if (scrollY > 0) {
+          if (lenis) lenis.start()
           window.scrollTo({ top: 0, behavior: "smooth" })
         }
       }
     },
-    [locked, frameIndex, frameCount, isAnimating, scrollToNext, playToEnd, playToStart]
+    [lenis, locked, frameIndex, frameCount, isAnimating, scrollToNext, playToEnd, playToStart]
   )
 
   useEffect(() => {
