@@ -1,0 +1,218 @@
+{
+  "header": {
+    "menu": "Menú",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "home": "Inicio",
+    "allFlavours": "Todos los sabores",
+    "aboutUs": "Sobre nosotros",
+    "contact": "Contacto",
+    "cartWithCount": "Carrito con {count} productos"
+  },
+  "hero": {
+    "subheader": "Hechas con amor",
+    "scroll": "scroll"
+  },
+  "footer": {
+    "tagline": "Recetas de familia, horneadas con cariño.",
+    "flavours": "Sabores",
+    "aboutUs": "Sobre nosotros",
+    "contact": "Contacto",
+    "copyright": "© 2025 Muxu Cheesecake. Todos los derechos reservados.",
+    "terms": "Términos de uso",
+    "privacy": "Política de privacidad",
+    "cookies": "Cookies"
+  },
+  "comoFunciona": {
+    "title": "¡La felicidad está a tan solo 3 pasos!",
+    "step1": "Elige tu Kisscake",
+    "step2": "Elige día y dirección",
+    "step3": "Lo horneamos y te lo llevamos"
+  },
+  "momentos": {
+    "title": "Momentos Muxu",
+    "subtitle": "los valores que nos guían",
+    "captions": {
+      "dulzura": "Dulzura",
+      "dulzuraSub": "Ilumina la mesa",
+      "familia": "Familia",
+      "familiaSub": "Abrazos y risas",
+      "compartir": "Compartir",
+      "compartirSub": "Un ritual Muxu",
+      "tradicion": "Tradición",
+      "tradicionSub": "Recetas de siempre",
+      "recuerdos": "Recuerdos",
+      "recuerdosSub": "Sabores que vuelven",
+      "amor": "Amor",
+      "amorSub": "En cada cheesecake que creamos"
+    }
+  },
+  "voces": {
+    "title": "Sobre Muxu",
+    "paragraph1": "En Muxu Cheesecakes creemos que los mejores momentos de la vida suceden alrededor de una mesa: en una sobremesa interminable, en una merienda improvisada con amigas, en una celebración en familia o en el beso con tu pareja después del postre. Por eso, nuestras tartas no son solo cheesecakes… son pequeñas historias de amor, cariño y complicidad.",
+    "paragraph2": "\"Muxu\" significa beso en euskera, de dónde proviene la receta original de nuestras cheesecakes, y es lo que buscamos transmitir con cada una de nuestras creaciones: un detalle dulce que abriga, acompaña y une.",
+    "paragraph3": "Sabemos lo importante que es que la experiencia sea perfecta de principio a fin. Por eso ofrecemos entrega a domicilio, cuidando cada detalle para que tu cheesecake llegue en perfecto estado, fresca, bonita y lista para enamorar desde el primer bocado. La comodidad y la calidad son esenciales para nosotras: queremos que tú solo te preocupes de disfrutar.",
+    "paragraph4": "En Muxu Cheesecakes horneamos dulzura, repartimos cariño y celebramos los momentos que realmente importan.",
+    "brandName": "Muxu Cheesecakes",
+    "tagline": "Un beso en forma de cheesecake."
+  },
+  "flavours": {
+    "sectionTitle": "Nuestros sabores",
+    "sectionSubtitle": "Para cada mesa, un Muxu diferente.",
+    "addToCart": "Añadir al carrito",
+    "buyNow": "Comprar ahora",
+    "conocerMas": "Conocer más",
+    "desde": "Desde",
+    "limitedEdition": "EDICIÓN LIMITADA",
+    "perCake": "por cheesecake",
+    "pageTitle": "Nuestros Sabores Muxu",
+    "pageSubtitle": "Descubre nuestra colección completa de cheesecakes artesanales, cada una hecha con amor y los mejores ingredientes."
+  },
+  "cart": {
+    "title": "Tu carrito",
+    "titleWithCount": "Tu carrito ({count})",
+    "empty": "Tu carrito está vacío",
+    "subtotal": "Subtotal",
+    "proceedToCheckout": "Ir al checkout",
+    "preparingCheckout": "Preparando checkout…"
+  },
+  "checkout": {
+    "loadingMessage": "Estamos preparando tu Muxu…",
+    "pageTitle": "Checkout",
+    "shippingTitle": "Dirección de envío",
+    "paymentTitle": "Pago",
+    "paymentNote": "El pago se procesa con Stripe. Usa el carrito para ir al checkout.",
+    "goHome": "Ir al inicio",
+    "orderSummary": "Resumen",
+    "shipping": "Envío",
+    "shippingAtCheckout": "En checkout",
+    "total": "Total",
+    "continueShopping": "Seguir comprando",
+    "firstName": "Nombre",
+    "lastName": "Apellidos",
+    "email": "Email",
+    "address": "Dirección",
+    "city": "Ciudad",
+    "state": "Provincia",
+    "zip": "CP"
+  },
+  "sizeSelect": {
+    "titleBuy": "Elige el tamaño para comprar",
+    "titleAdd": "Elige el tamaño",
+    "selectProduct": "Selecciona tu Christmas Kisscake"
+  },
+  "common": {
+    "pieces": "trozos",
+    "sizeMediana": "Mediana",
+    "sizeGrande": "Grande"
+  },
+  "errors": {
+    "checkoutConfig": "No hay precio configurado para este producto. Configura lib/stripe/price-mapping.ts",
+    "checkoutConfigProduct": "No hay precio configurado para {productName} ({size}). Configura lib/stripe/price-mapping.ts",
+    "checkoutFailed": "Error al crear el checkout. Por favor, verifica STRIPE_SECRET_KEY en .env.local.",
+    "checkoutInvalid": "Error: URL de checkout inválida. Por favor, inténtalo de nuevo."
+  },
+  "toast": {
+    "addedToCart": "Añadido a tu Muxu Box 🍰"
+  },
+  "language": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "English"
+  },
+  "allergens": {
+    "title": "Alérgenos",
+    "viewInfo": "Ver información de alérgenos",
+    "close": "Cerrar",
+    "summary": "Todos nuestros cheesecakes contienen trigo, huevo y leche. Algunos sabores incluyen frutos secos o soja.",
+    "moreInfo": "Más información de alérgenos",
+    "lessInfo": "Menos información de alérgenos",
+    "labels": {
+      "trigo": "Trigo/Glúten",
+      "huevos": "Huevos",
+      "leche": "Leche",
+      "nueces": "Frutos secos",
+      "soja": "Soja"
+    },
+    "descriptions": {
+      "trigo": "Contiene trigo y gluten en la base de galleta.",
+      "huevos": "Contiene huevo en la mezcla de cheesecake.",
+      "leche": "Contiene lácteos: queso crema, nata y mantequilla.",
+      "nueces": "Contiene frutos secos (almendras, pistachos, cacahuetes, etc.) según el sabor.",
+      "soja": "Puede contener derivados de soja en algunos sabores (chocolate blanco, Oreo, Lotus, Suchard)."
+    }
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "subtitle": "¿Tienes preguntas sobre nuestras cheesecakes? ¿Quieres hacer un pedido personalizado? ¡Nos encantaría saber de ti!",
+    "name": "Nombre",
+    "namePlaceholder": "Nombre",
+    "surname": "Apellido",
+    "surnamePlaceholder": "Apellido",
+    "email": "Email",
+    "emailPlaceholder": "Email",
+    "phone": "Teléfono",
+    "phonePlaceholder": "Teléfono",
+    "phoneOptional": "opcional",
+    "message": "Mensaje",
+    "messagePlaceholder": "Mensaje",
+    "messageOptional": "opcional",
+    "termsLabel": "He leído y acepto los",
+    "termsLink": "Términos",
+    "privacyLink": "Privacidad",
+    "cookiesLink": "Cookies",
+    "and": "y",
+    "submit": "Enviar mensaje",
+    "sending": "Enviando...",
+    "requiredField": "Por favor completa este campo obligatorio.",
+    "acceptTerms": "Debes aceptar los términos para enviar.",
+    "location": "Ubicación",
+    "successMessage": "¡Mensaje enviado con éxito!",
+    "submitError": "Error al enviar el mensaje. Por favor, inténtalo de nuevo.",
+    "captchaRequired": "Por favor completa la verificación de seguridad."
+  },
+  "products": {
+    "turron-cheesecake": {
+      "name": "Christmas Kisscake · Turrón de Xixona",
+      "description": "Un abrazo de Navidad en cada bocado.",
+      "tagline": "El turrón de siempre, en un bocado suave y cremoso",
+      "fullDescription": "Un abrazo de Navidad en cada bocado. Nuestra cheesecake más cremosa se fusiona con el inconfundible sabor del turrón blando de Xixona para crear un postre suave, cálido y profundamente navideño."
+    },
+    "suchard-cheesecake": {
+      "name": "Christmas Kisscake · Suchard",
+      "description": "Chocolate Suchard convertido en cheesecake cremoso.",
+      "tagline": "Chocolate Suchard convertido en cheesecake cremoso",
+      "fullDescription": "Chocolate Suchard convertido en cheesecake cremoso. El sabor inconfundible del chocolate suizo se funde con nuestra base de cheesecake más delicada para crear un postre navideño intenso, sedoso y profundamente reconfortante."
+    },
+    "classic-new-york": {
+      "name": "Original",
+      "description": "Clásico, suave y perfecto para todos.",
+      "tagline": "Clásico, suave y perfecto para todos",
+      "fullDescription": "Clásico, suave y perfecto para todos. Nuestra receta original, horneada con la tradición de siempre. Un sabor que nunca pasa de moda, cremoso y delicado, perfecto para compartir en cualquier momento."
+    },
+    "white-chocolate": {
+      "name": "Chocolate blanco",
+      "description": "Cremoso y delicado.",
+      "tagline": "Cremoso y delicado",
+      "fullDescription": "Cremoso y delicado. El chocolate blanco más suave se encuentra con nuestra base de cheesecake para crear una experiencia dulce y elegante. Perfecto para los amantes de los sabores sutiles y refinados."
+    },
+    "lotus": {
+      "name": "Lotus",
+      "description": "Dulce y especiado.",
+      "tagline": "Dulce y especiado",
+      "fullDescription": "Dulce y especiado. La galleta Lotus más icónica se transforma en una cheesecake irresistible. Caramelo, canela y especias se funden en cada bocado, creando un sabor único que despierta los sentidos."
+    },
+    "oreo": {
+      "name": "Oreo",
+      "description": "Nostalgia en cada bocado.",
+      "tagline": "Nostalgia en cada bocado",
+      "fullDescription": "Nostalgia en cada bocado. Las galletas Oreo más queridas se convierten en una cheesecake cremosa y deliciosa. Chocolate y vainilla se unen para recordarnos los sabores de la infancia, con un toque elegante y sofisticado."
+    },
+    "pistachio": {
+      "name": "Pistaccio",
+      "description": "Elegante y único.",
+      "tagline": "Elegante y único",
+      "fullDescription": "Elegante y único. El sabor distintivo del pistacho se combina con nuestra cheesecake más refinada. Un postre sofisticado que sorprende con su textura cremosa y su sabor intenso, perfecto para ocasiones especiales."
+    }
+  }
+}

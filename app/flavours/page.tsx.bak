@@ -1,0 +1,51 @@
+"use client"
+
+import { useState } from "react"
+import { LogoScaler } from "@/components/logo-scaler"
+import { NavigationHeader } from "@/components/navigation-header"
+import { ProductCard } from "@/components/product-card"
+import { CheckoutModal } from "@/components/checkout-modal"
+import { Footer } from "@/components/footer"
+import { PRODUCTS } from "@/lib/products"
+
+export default function FlavoursPage() {
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+
+  const handleAddToCart = (productId: string) => {
+    setSelectedProductId(productId)
+  }
+
+  const handleCloseCheckout = () => {
+    setSelectedProductId(null)
+  }
+
+  return (
+    <>
+      <LogoScaler />
+      <NavigationHeader />
+
+      <main className="min-h-screen pt-24 pb-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="font-serif text-4xl md:text-6xl font-bold mb-4 text-balance">All Our Flavours</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Discover our complete collection of handcrafted cheesecakes, each one made with love and the finest
+              ingredients.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {PRODUCTS.map((product) => (
+              <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+            ))}
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+
+      <CheckoutModal productId={selectedProductId} onClose={handleCloseCheckout} />
+    </>
+  )
+}
+

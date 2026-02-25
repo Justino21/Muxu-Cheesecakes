@@ -1,0 +1,187 @@
+export interface Product {
+  id: string
+  name: string
+  description: string
+  tagline?: string // Added short emotional tagline (2-5 words max)
+  priceInCents: number
+  price: number // Price in euros for display
+  image?: string
+  images?: string[]
+  isLimitedEdition?: boolean
+  isBestseller?: boolean
+  flavors?: string[]
+  slug?: string
+}
+
+export const PRODUCTS: Product[] = [
+  {
+    id: "turron-cheesecake",
+    name: "Turrón Cheesecake",
+    slug: "turron-cheesecake",
+    tagline: "Love and turrón reborn", // Added short emotional tagline
+    description:
+      "Our iconic Turrón Cheesecake captures the essence of Spanish Christmas. Rich almond nougat swirled into velvety cheesecake with hints of honey and citrus.",
+    priceInCents: 6500,
+    price: 65.0,
+    image: "/christmas-cheesecake.jpg",
+    images: ["/christmas-cheesecake.jpg"],
+    isLimitedEdition: true,
+    flavors: ["Almond Turrón", "Honey", "Citrus"],
+  },
+  {
+    id: "suchard-cheesecake",
+    name: "Suchard Cheesecake",
+    slug: "suchard-cheesecake",
+    tagline: "Sweet nostalgia wrapped in velvet", // Added short emotional tagline
+    description:
+      "The nostalgic Suchard Cheesecake brings childhood memories to life. Silky Swiss chocolate folded into creamy cheesecake with a delicate cocoa crust.",
+    priceInCents: 6500,
+    price: 65.0,
+    image: "/chocolate-cheesecake.jpg",
+    images: ["/chocolate-cheesecake.jpg"],
+    isLimitedEdition: true,
+    flavors: ["Swiss Chocolate", "Cocoa", "Cream"],
+  },
+  {
+    id: "classic-new-york",
+    name: "Classic New York",
+    slug: "classic-new-york",
+    tagline: "A childhood memory in every bite", // Added short emotional tagline
+    description:
+      "The timeless favorite. Rich, creamy, and perfectly balanced with a buttery graham cracker crust. Baked to perfection.",
+    priceInCents: 4500,
+    price: 45.0,
+    image: "/classic-cheesecake.jpg",
+    images: ["/classic-cheesecake.jpg"],
+    isBestseller: true,
+    flavors: ["Original"],
+  },
+  {
+    id: "salted-caramel",
+    name: "Salted Caramel Heaven",
+    slug: "salted-caramel-heaven",
+    tagline: "Decadent caramel dreams", // Added short emotional tagline
+    description:
+      "Decadent salted caramel swirled throughout silky cheesecake, topped with caramel drizzle and sea salt flakes.",
+    priceInCents: 5200,
+    price: 52.0,
+    image: "/caramel-cheesecake.jpg",
+    images: ["/caramel-cheesecake.jpg"],
+    isBestseller: true,
+    flavors: ["Salted Caramel"],
+  },
+  {
+    id: "matcha-white-chocolate",
+    name: "Matcha White Chocolate",
+    slug: "matcha-white-chocolate",
+    tagline: "Japanese elegance meets indulgence", // Added short emotional tagline
+    description:
+      "Japanese-inspired elegance meets creamy indulgence. Premium matcha paired with white chocolate in perfect harmony.",
+    priceInCents: 5500,
+    price: 55.0,
+    image: "/matcha-cheesecake.jpg",
+    images: ["/matcha-cheesecake.jpg"],
+    flavors: ["Matcha", "White Chocolate"],
+  },
+  {
+    id: "triple-berry",
+    name: "Triple Berry Bliss",
+    slug: "triple-berry-bliss",
+    tagline: "Summer in every bite", // Added short emotional tagline
+    description: "Fresh strawberries, blueberries, and raspberries nestled in our signature cream cheese blend.",
+    priceInCents: 4800,
+    price: 48.0,
+    image: "/berry-cheesecake.jpg",
+    images: ["/berry-cheesecake.jpg"],
+    flavors: ["Strawberry", "Blueberry", "Raspberry"],
+  },
+  {
+    id: "chocolate-hazelnut",
+    name: "Chocolate Hazelnut Luxury",
+    slug: "chocolate-hazelnut-luxury",
+    tagline: "Pure indulgence awaits", // Added short emotional tagline
+    description:
+      "Rich dark chocolate cheesecake with roasted hazelnut praline and a chocolate cookie crust. Pure indulgence.",
+    priceInCents: 5500,
+    price: 55.0,
+    image: "/chocolate-cheesecake.jpg",
+    images: ["/chocolate-cheesecake.jpg"],
+    flavors: ["Dark Chocolate", "Hazelnut"],
+  },
+]
+
+export function formatPrice(priceInCents: number): string {
+  return `$${(priceInCents / 100).toFixed(2)}`
+}
+
+export function getProductBySlug(slug: string): Product | undefined {
+  return PRODUCTS.find((p) => p.slug === slug)
+}
+
+export function getProductById(id: string): Product | undefined {
+  return PRODUCTS.find((p) => p.id === id)
+}
+
+export interface SizeOption {
+  size: string
+  subtitle: string
+  priceLabel: string
+  priceInCents: number
+}
+
+export function getProductPricingOptions(product: Product): SizeOption[] {
+  // Special pricing for Pistaccio
+  if (product.id === "pistachio") {
+    return [
+      { size: "Mediana", subtitle: "8 trozos", priceLabel: "33€", priceInCents: 3300 },
+      { size: "Grande", subtitle: "12 trozos", priceLabel: "38€", priceInCents: 3800 },
+    ]
+  }
+  
+  // Special pricing for Lotus
+  if (product.id === "lotus") {
+    return [
+      { size: "Mediana", subtitle: "8 trozos", priceLabel: "29€", priceInCents: 2900 },
+      { size: "Grande", subtitle: "12 trozos", priceLabel: "34€", priceInCents: 3400 },
+    ]
+  }
+  
+  // Special pricing for Original
+  if (product.id === "classic-new-york") {
+    return [
+      { size: "Mediana", subtitle: "8 trozos", priceLabel: "29€", priceInCents: 2900 },
+      { size: "Grande", subtitle: "12 trozos", priceLabel: "34€", priceInCents: 3400 },
+    ]
+  }
+  
+  // Special pricing for Chocolate blanco
+  if (product.id === "white-chocolate") {
+    return [
+      { size: "Mediana", subtitle: "8 trozos", priceLabel: "29€", priceInCents: 2900 },
+      { size: "Grande", subtitle: "12 trozos", priceLabel: "34€", priceInCents: 3400 },
+    ]
+  }
+  
+  // Special pricing for Oreo
+  if (product.id === "oreo") {
+    return [
+      { size: "Mediana", subtitle: "8 trozos", priceLabel: "29€", priceInCents: 2900 },
+      { size: "Grande", subtitle: "12 trozos", priceLabel: "34€", priceInCents: 3400 },
+    ]
+  }
+  
+  // Limited edition pricing
+  if (product.isLimitedEdition) {
+    return [
+      { size: "Mediana", subtitle: "8 trozos", priceLabel: "33€", priceInCents: 3300 },
+      { size: "Grande", subtitle: "12 trozos", priceLabel: "38€", priceInCents: 3800 },
+    ]
+  }
+  
+  // Regular pricing
+  return [
+    { size: "Mediana", subtitle: "8 trozos", priceLabel: "30€", priceInCents: 3000 },
+    { size: "Grande", subtitle: "12 trozos", priceLabel: "34€", priceInCents: 3400 },
+  ]
+}
+

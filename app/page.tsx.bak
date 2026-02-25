@@ -1,0 +1,101 @@
+"use client"
+
+import { useEffect } from "react"
+import { TopBrandBar } from "@/components/top-brand-bar"
+import { GucciIntro } from "@/components/gucci-intro"
+import { HeaderWithLogo } from "@/components/header-with-logo"
+import { CappedHero } from "@/components/capped-hero"
+import { LimitedEditionModule } from "@/components/limited-edition-module"
+import { ProductCard } from "@/components/product-card"
+import { SocialProof } from "@/components/social-proof"
+import { Footer } from "@/components/footer"
+import { PRODUCTS } from "@/lib/products"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+
+export default function HomePage() {
+  const regularProducts = PRODUCTS.filter((p) => !p.isLimitedEdition)
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      ;(window as any).gtag("event", "view_home", {
+        page_title: "Muxu Cheesecake Home",
+        page_location: window.location.href,
+      })
+    }
+  }, [])
+
+  const handleAddToCart = (productId: string) => {
+    console.log("[v0] Add to cart:", productId)
+    // This will trigger analytics in the ProductCard component
+  }
+
+  return (
+    <>
+      <TopBrandBar />
+
+      <GucciIntro />
+
+      <HeaderWithLogo />
+
+      <main className="min-h-screen bg-[#EAD8C8]">
+        <CappedHero />
+
+        <LimitedEditionModule />
+
+        <section className="py-12 md:py-16 px-4 bg-[#EAD8C8]">
+          <div className="max-w-4xl mx-auto text-center">
+            <Link href="/flavours">
+              <Button
+                size="lg"
+                className="px-12 py-6 text-lg font-semibold rounded-full bg-[#F4C6D7] hover:bg-[#F4C6D7]/90 text-[#2A1E1B] hover:scale-105 transition-all shadow-lg"
+                onClick={() => {
+                  if (typeof window !== "undefined" && (window as any).gtag) {
+                    ;(window as any).gtag("event", "click_discover_all", {
+                      button_location: "cta_strip",
+                    })
+                  }
+                }}
+              >
+                Discover all of our amazing flavours!
+              </Button>
+            </Link>
+            <p className="text-[#2A1E1B]/70 text-sm mt-4">Crafted with love. Delivered fresh.</p>
+          </div>
+        </section>
+
+        <section id="products" className="py-16 md:py-24 px-4 bg-[#FFF5E9]">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="font-serif text-3xl md:text-5xl text-center mb-4 text-balance text-[#2A1E1B]">
+              Our Signature Collection
+            </h2>
+            <p className="text-center text-[#2A1E1B]/70 text-base md:text-lg max-w-2xl mx-auto mb-12 md:mb-16">
+              Each cheesecake is a masterpiece, crafted with the finest ingredients and baked with love.
+            </p>
+
+            {/* Mobile: horizontal scroll */}
+            <div className="md:hidden flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+              {regularProducts.map((product) => (
+                <div key={product.id} className="min-w-[280px] snap-start">
+                  <ProductCard product={product} onAddToCart={handleAddToCart} />
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: grid */}
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {regularProducts.map((product) => (
+                <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <SocialProof />
+      </main>
+
+      <Footer />
+    </>
+  )
+}
+

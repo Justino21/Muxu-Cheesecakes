@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# Large media (host elsewhere or use Git LFS)
+public/hero-video-slow.mp4
+
+# Environment (never commit secrets)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Debug
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+*.code-workspace
+.idea/
+.vscode/
+
+# Vercel
+.vercel
+
+# Misc
+*.tsbuildinfo
+next-env.d.ts
