@@ -6,7 +6,8 @@ import { useLocale } from "@/contexts/locale-context"
 
 const DEFAULT_FRAME_COUNT = 439
 const TARGET_DURATION_MS = 3200 // full sequence in 3.2 seconds
-const PRELOAD_AHEAD = 25 // preload this many frames ahead to avoid black flashes
+const PRELOAD_AHEAD = 40 // preload this many frames ahead
+const PRELOAD_INITIAL = 80 // preload first N frames on mount for smooth start
 
 export function CinematicWarmHero() {
   const lenis = useLenis()
@@ -18,16 +19,16 @@ export function CinematicWarmHero() {
   const [videoProgress, setVideoProgress] = useState(0)
   const touchY = useRef(0)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const playTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const rafRef = useRef<number>(0)
   const frameIndexRef = useRef(0)
   const hasScrolledPastRef = useRef(false)
   const programmaticScrollRef = useRef(false)
   frameIndexRef.current = frameIndex
 
   const stopPlayback = useCallback(() => {
-    if (playTimeoutRef.current) {
-      clearTimeout(playTimeoutRef.current)
-      playTimeoutRef.current = null
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = 0
     }
     setIsAnimating(false)
   }, [])
@@ -36,45 +37,61 @@ export function CinematicWarmHero() {
     stopPlayback()
     const n = frameCount || 1
     const max = n - 1
-    const stepMs = max > 0 ? TARGET_DURATION_MS / max : 0
+    const startFrame = frameIndexRef.current
+    if (startFrame >= max) return
     setIsAnimating(true)
-    const tick = (i: number) => {
+    const startTime = performance.now()
+    const remaining = max - startFrame
+    const duration = TARGET_DURATION_MS * (remaining / max)
+    const run = () => {
+      const elapsed = performance.now() - startTime
+      const progress = Math.min(1, elapsed / duration)
+      const i = Math.min(max, startFrame + Math.floor(progress * (remaining + 1)))
+      if (frameIndexRef.current !== i) {
+        frameIndexRef.current = i
+        setFrameIndex(i)
+      }
       if (i >= max) {
         setIsAnimating(false)
         return
       }
-      const next = i + 1
-      setFrameIndex(next)
-      playTimeoutRef.current = setTimeout(() => tick(next), stepMs)
+      rafRef.current = requestAnimationFrame(run)
     }
-    tick(frameIndexRef.current)
+    rafRef.current = requestAnimationFrame(run)
   }, [frameCount, stopPlayback])
 
   const playToStart = useCallback(() => {
     stopPlayback()
     const n = frameCount || 1
     const max = n - 1
-    const stepMs = max > 0 ? TARGET_DURATION_MS / max : 0
+    const startFrame = frameIndexRef.current
+    if (startFrame <= 0) return
     setIsAnimating(true)
-    const tick = (i: number) => {
+    const startTime = performance.now()
+    const duration = TARGET_DURATION_MS * (startFrame / max)
+    const run = () => {
+      const elapsed = performance.now() - startTime
+      const progress = Math.min(1, elapsed / duration)
+      const i = Math.max(0, startFrame - Math.floor(progress * (startFrame + 1)))
+      if (frameIndexRef.current !== i) {
+        frameIndexRef.current = i
+        setFrameIndex(i)
+      }
       if (i <= 0) {
         setIsAnimating(false)
-        // After rewinding to start, scroll to very top if not already there
         if (window.scrollY > 0) {
           window.scrollTo({ top: 0, behavior: "smooth" })
         }
         return
       }
-      const next = i - 1
-      setFrameIndex(next)
-      playTimeoutRef.current = setTimeout(() => tick(next), stepMs)
+      rafRef.current = requestAnimationFrame(run)
     }
-    tick(frameIndexRef.current)
+    rafRef.current = requestAnimationFrame(run)
   }, [frameCount, stopPlayback])
 
   useEffect(() => {
     return () => {
-      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
   }, [])
 
@@ -121,7 +138,18 @@ export function CinematicWarmHero() {
   useEffect(() => {
     fetch("/hero-frames/meta.json")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d?.frameCount && setFrameCount(d.frameCount))
+      .then((d) => {
+        const count = d?.frameCount
+        if (count) {
+          setFrameCount(count)
+          // Preload first N frames immediately for smooth start
+          const preload = Math.min(PRELOAD_INITIAL, count)
+          for (let k = 0; k < preload; k++) {
+            const img = new Image()
+            img.src = `/hero-frames/frame_${String(k).padStart(4, "0")}.jpg`
+          }
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -253,11 +281,14 @@ export function CinematicWarmHero() {
   }, [onTouchStart, onTouchMove])
 
   const useFrames = frameCount > 0
-  const src = useFrames
-    ? `/hero-frames/frame_${String(frameIndex).padStart(4, "0")}.jpg`
-    : ""
+  const maxFrame = Math.max(0, (frameCount || 1) - 1)
+  const frameUrl = (i: number) =>
+    `/hero-frames/frame_${String(Math.min(maxFrame, Math.max(0, i))).padStart(4, "0")}.jpg`
+  const showFirst = frameIndex % 2 === 0
+  const src0 = showFirst ? frameUrl(frameIndex) : frameUrl(frameIndex + 1)
+  const src1 = showFirst ? frameUrl(frameIndex + 1) : frameUrl(frameIndex)
 
-  // Preload upcoming frames so switching src doesn't show black (image already in cache)
+  // Preload nearby frames so the hidden buffer is ready
   useEffect(() => {
     if (!useFrames || frameCount <= 0) return
     const max = frameCount - 1
@@ -265,13 +296,13 @@ export function CinematicWarmHero() {
       const next = frameIndex + k
       if (next > max) break
       const img = new Image()
-      img.src = `/hero-frames/frame_${String(next).padStart(4, "0")}.jpg`
+      img.src = frameUrl(next)
     }
     for (let k = 1; k <= PRELOAD_AHEAD; k++) {
       const prev = frameIndex - k
       if (prev < 0) break
       const img = new Image()
-      img.src = `/hero-frames/frame_${String(prev).padStart(4, "0")}.jpg`
+      img.src = frameUrl(prev)
     }
   }, [useFrames, frameCount, frameIndex])
 
@@ -306,12 +337,34 @@ export function CinematicWarmHero() {
   return (
     <section className="relative h-dvh w-full overflow-hidden bg-black">
       {useFrames ? (
-        <img
-          src={src}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-          fetchPriority="high"
-        />
+        <>
+          <img
+            src={src0}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              opacity: showFirst ? 1 : 0,
+              zIndex: showFirst ? 1 : 0,
+              transform: "translateZ(0)",
+              backfaceVisibility: "hidden",
+            }}
+            fetchPriority="high"
+            draggable={false}
+          />
+          <img
+            src={src1}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              opacity: showFirst ? 0 : 1,
+              zIndex: showFirst ? 0 : 1,
+              transform: "translateZ(0)",
+              backfaceVisibility: "hidden",
+            }}
+            fetchPriority="high"
+            draggable={false}
+          />
+        </>
       ) : (
         <video
           ref={videoRef}
