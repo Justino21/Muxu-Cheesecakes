@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, useEffect, useCallback } from "react"
+import { useLenis } from "@/components/lenis-provider"
 import { useLocale } from "@/contexts/locale-context"
 
 const DEFAULT_FRAME_COUNT = 439
@@ -13,6 +14,7 @@ function frameUrl(max: number, i: number) {
 }
 
 export function CinematicWarmHero() {
+  const lenis = useLenis()
   const { t } = useLocale()
   const [frameCount, setFrameCount] = useState(DEFAULT_FRAME_COUNT)
   const [frameIndex, setFrameIndex] = useState(0)
@@ -50,26 +52,54 @@ export function CinematicWarmHero() {
   const playToEnd = useCallback(() => {
     stopPlayback()
     if (frameIndexRef.current >= maxFrame) return
-    setIsAnimating(true)
     animStartTimeRef.current = performance.now()
     animStartFrameRef.current = frameIndexRef.current
     animForwardRef.current = true
+    isAnimatingRef.current = true
+    setIsAnimating(true)
   }, [stopPlayback, maxFrame])
 
   const playToStart = useCallback(() => {
     stopPlayback()
     if (frameIndexRef.current <= 0) return
-    setIsAnimating(true)
     animStartTimeRef.current = performance.now()
     animStartFrameRef.current = frameIndexRef.current
     animForwardRef.current = false
+    isAnimatingRef.current = true
+    setIsAnimating(true)
   }, [stopPlayback, maxFrame])
+
+  const scrollToNext = useCallback(() => {
+    const y = typeof window !== "undefined" ? window.innerHeight : 0
+    if (lenis) {
+      lenis.start()
+      lenis.scrollTo(y, { force: true, duration: 0.2 })
+    }
+    window.scrollTo({ top: y, behavior: "smooth" })
+  }, [lenis])
 
   useEffect(() => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    if (!lenis) return
+    const onScroll = () => {
+      const y = typeof window !== "undefined" ? window.scrollY : 0
+      if (y < 10) lenis.stop()
+      else if (y < 80 && locked) lenis.stop()
+      else lenis.start()
+    }
+    onScroll()
+    const unsub = lenis.on("scroll", () => onScroll())
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => {
+      unsub()
+      window.removeEventListener("scroll", onScroll)
+    }
+  }, [lenis, locked])
 
   // Load meta and frame 0, then show hero so first paint is not black
   useEffect(() => {
@@ -128,8 +158,9 @@ export function CinematicWarmHero() {
           e.preventDefault()
           playToEnd()
         } else {
+          e.preventDefault()
           setLocked(false)
-          return
+          scrollToNext()
         }
       } else if (e.deltaY < 0) {
         if (isAnimating) {
@@ -145,7 +176,7 @@ export function CinematicWarmHero() {
         }
       }
     },
-    [locked, frameIndex, frameCount, isAnimating, playToEnd, playToStart]
+    [locked, frameIndex, frameCount, isAnimating, scrollToNext, playToEnd, playToStart]
   )
 
   const onTouchStart = useCallback((e: TouchEvent) => {
@@ -170,8 +201,9 @@ export function CinematicWarmHero() {
           e.preventDefault()
           playToEnd()
         } else {
+          e.preventDefault()
           setLocked(false)
-          return
+          scrollToNext()
         }
       } else if (dy < 0) {
         if (isAnimating) {
@@ -187,7 +219,7 @@ export function CinematicWarmHero() {
         }
       }
     },
-    [locked, frameIndex, frameCount, isAnimating, playToEnd, playToStart]
+    [locked, frameIndex, frameCount, isAnimating, scrollToNext, playToEnd, playToStart]
   )
 
   useEffect(() => {
@@ -293,6 +325,8 @@ export function CinematicWarmHero() {
           current = Math.min(maxFrame, start + Math.floor(progress * (remaining + 1)))
           frameIndexRef.current = current
           if (current >= maxFrame) {
+            frameIndexRef.current = maxFrame
+            isAnimatingRef.current = false
             setFrameIndex(maxFrame)
             setIsAnimating(false)
           }
@@ -302,6 +336,8 @@ export function CinematicWarmHero() {
           current = Math.max(0, start - Math.floor(progress * (start + 1)))
           frameIndexRef.current = current
           if (current <= 0) {
+            frameIndexRef.current = 0
+            isAnimatingRef.current = false
             setFrameIndex(0)
             setIsAnimating(false)
             if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: "smooth" })
