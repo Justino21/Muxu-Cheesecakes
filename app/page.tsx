@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { TopBrandBar } from "@/components/top-brand-bar"
 import HeaderWithLogo from "@/components/header-with-logo"
-import { CinematicWarmHeroCanvas } from "@/components/cinematic-warm-hero-canvas"
+import { CinematicWarmHero } from "@/components/cinematic-warm-hero"
 import { CinematicHolidayGallery } from "@/components/cinematic-holiday-gallery"
 import { CinematicPremiumFlavours } from "@/components/cinematic-premium-flavours"
 import { CinematicVocesNavidad } from "@/components/cinematic-voces-navidad"
@@ -27,7 +27,7 @@ export default function HomePage() {
 
       <main className="min-h-screen">
         {/* 1. Hero - Cinematic Warm Christmas Film */}
-        <CinematicWarmHeroCanvas />
+        <CinematicWarmHero />
 
         {/* 2. Momentos Muxu - Cinematic Holiday Gallery */}
         <CinematicHolidayGallery />
