@@ -9,6 +9,10 @@ const TARGET_DURATION_MS = 3200 // full sequence in 3.2 seconds
 const PRELOAD_AHEAD = 40 // preload this many frames ahead
 const PRELOAD_INITIAL = 80 // preload first N frames on mount for smooth start
 
+function frameUrlFor(max: number, i: number) {
+  return `/hero-frames/frame_${String(Math.min(max, Math.max(0, i))).padStart(4, "0")}.jpg`
+}
+
 export function CinematicWarmHero() {
   const lenis = useLenis()
   const { t } = useLocale()
@@ -16,6 +20,7 @@ export function CinematicWarmHero() {
   const [frameIndex, setFrameIndex] = useState(0)
   const [locked, setLocked] = useState(true)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [heroReady, setHeroReady] = useState(false)
   const [videoProgress, setVideoProgress] = useState(0)
   const touchY = useRef(0)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -23,6 +28,10 @@ export function CinematicWarmHero() {
   const frameIndexRef = useRef(0)
   const hasScrolledPastRef = useRef(false)
   const programmaticScrollRef = useRef(false)
+  const img0Ref = useRef<HTMLImageElement>(null)
+  const img1Ref = useRef<HTMLImageElement>(null)
+  const titleRef = useRef<HTMLDivElement>(null)
+  const subheaderRef = useRef<HTMLParagraphElement>(null)
   frameIndexRef.current = frameIndex
 
   const stopPlayback = useCallback(() => {
@@ -47,11 +56,44 @@ export function CinematicWarmHero() {
       const elapsed = performance.now() - startTime
       const progress = Math.min(1, elapsed / duration)
       const i = Math.min(max, startFrame + Math.floor(progress * (remaining + 1)))
-      if (frameIndexRef.current !== i) {
-        frameIndexRef.current = i
-        setFrameIndex(i)
+      frameIndexRef.current = i
+      const img0 = img0Ref.current
+      const img1 = img1Ref.current
+      const titleEl = titleRef.current
+      const subEl = subheaderRef.current
+      if (img0 && img1) {
+        const showFirst = i % 2 === 0
+        const url = frameUrlFor(max, i)
+        const urlNext = frameUrlFor(max, i + 1)
+        if (showFirst) {
+          img0.src = url
+          img1.src = urlNext
+          img0.style.opacity = "1"
+          img1.style.opacity = "0"
+          img0.style.zIndex = "1"
+          img1.style.zIndex = "0"
+        } else {
+          img0.src = urlNext
+          img1.src = url
+          img0.style.opacity = "0"
+          img1.style.opacity = "1"
+          img0.style.zIndex = "0"
+          img1.style.zIndex = "1"
+        }
+      }
+      const prog = i / Math.max(1, max)
+      const to = prog < 0.06 ? 0 : prog > 0.18 ? 1 : (prog - 0.06) / 0.12
+      const so = prog < 0.12 ? 0 : prog > 0.26 ? 1 : (prog - 0.12) / 0.14
+      if (titleEl) {
+        titleEl.style.opacity = String(to)
+        titleEl.style.transform = `translateY(${12 * (1 - to)}px)`
+      }
+      if (subEl) {
+        subEl.style.opacity = String(so)
+        subEl.style.transform = `translateY(${10 * (1 - so)}px)`
       }
       if (i >= max) {
+        setFrameIndex(max)
         setIsAnimating(false)
         return
       }
@@ -73,11 +115,44 @@ export function CinematicWarmHero() {
       const elapsed = performance.now() - startTime
       const progress = Math.min(1, elapsed / duration)
       const i = Math.max(0, startFrame - Math.floor(progress * (startFrame + 1)))
-      if (frameIndexRef.current !== i) {
-        frameIndexRef.current = i
-        setFrameIndex(i)
+      frameIndexRef.current = i
+      const img0 = img0Ref.current
+      const img1 = img1Ref.current
+      const titleEl = titleRef.current
+      const subEl = subheaderRef.current
+      if (img0 && img1) {
+        const showFirst = i % 2 === 0
+        const url = frameUrlFor(max, i)
+        const urlNext = frameUrlFor(max, i + 1)
+        if (showFirst) {
+          img0.src = url
+          img1.src = urlNext
+          img0.style.opacity = "1"
+          img1.style.opacity = "0"
+          img0.style.zIndex = "1"
+          img1.style.zIndex = "0"
+        } else {
+          img0.src = urlNext
+          img1.src = url
+          img0.style.opacity = "0"
+          img1.style.opacity = "1"
+          img0.style.zIndex = "0"
+          img1.style.zIndex = "1"
+        }
+      }
+      const prog = i / Math.max(1, max)
+      const to = prog < 0.06 ? 0 : prog > 0.18 ? 1 : (prog - 0.06) / 0.12
+      const so = prog < 0.12 ? 0 : prog > 0.26 ? 1 : (prog - 0.12) / 0.14
+      if (titleEl) {
+        titleEl.style.opacity = String(to)
+        titleEl.style.transform = `translateY(${12 * (1 - to)}px)`
+      }
+      if (subEl) {
+        subEl.style.opacity = String(so)
+        subEl.style.transform = `translateY(${10 * (1 - so)}px)`
       }
       if (i <= 0) {
+        setFrameIndex(0)
         setIsAnimating(false)
         if (window.scrollY > 0) {
           window.scrollTo({ top: 0, behavior: "smooth" })
@@ -135,22 +210,44 @@ export function CinematicWarmHero() {
     return () => window.removeEventListener("scroll", onScroll)
   }, [lenis, locked])
 
+  // Cold load: preload frame 0 in head, then decode frame 0 (and 1) before showing hero
   useEffect(() => {
-    fetch("/hero-frames/meta.json")
+    const preloadLink = document.createElement("link")
+    preloadLink.rel = "preload"
+    preloadLink.as = "image"
+    preloadLink.href = "/hero-frames/frame_0000.jpg"
+    document.head.appendChild(preloadLink)
+
+    const metaPromise = fetch("/hero-frames/meta.json")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        const count = d?.frameCount
-        if (count) {
-          setFrameCount(count)
-          // Preload first N frames immediately for smooth start
-          const preload = Math.min(PRELOAD_INITIAL, count)
-          for (let k = 0; k < preload; k++) {
-            const img = new Image()
-            img.src = `/hero-frames/frame_${String(k).padStart(4, "0")}.jpg`
-          }
+      .then((d) => d?.frameCount ?? DEFAULT_FRAME_COUNT)
+
+    const decodeFrame0 = new Promise<number>((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        img.decode().then(() => resolve(0)).catch(reject)
+      }
+      img.onerror = reject
+      img.src = "/hero-frames/frame_0000.jpg"
+    })
+
+    // Preload frame 1 in parallel (don't block hero on it)
+    const img1 = new Image()
+    img1.src = "/hero-frames/frame_0001.jpg"
+
+    Promise.all([metaPromise, decodeFrame0])
+      .then(([count]) => {
+        setFrameCount(count)
+        setHeroReady(true)
+        const preload = Math.min(PRELOAD_INITIAL, count)
+        for (let k = 2; k < preload; k++) {
+          const img = new Image()
+          img.src = frameUrlFor(count - 1, k)
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        setHeroReady(true)
+      })
   }, [])
 
   useEffect(() => {
@@ -282,29 +379,27 @@ export function CinematicWarmHero() {
 
   const useFrames = frameCount > 0
   const maxFrame = Math.max(0, (frameCount || 1) - 1)
-  const frameUrl = (i: number) =>
-    `/hero-frames/frame_${String(Math.min(maxFrame, Math.max(0, i))).padStart(4, "0")}.jpg`
   const showFirst = frameIndex % 2 === 0
-  const src0 = showFirst ? frameUrl(frameIndex) : frameUrl(frameIndex + 1)
-  const src1 = showFirst ? frameUrl(frameIndex + 1) : frameUrl(frameIndex)
+  const src0 = showFirst ? frameUrlFor(maxFrame, frameIndex) : frameUrlFor(maxFrame, frameIndex + 1)
+  const src1 = showFirst ? frameUrlFor(maxFrame, frameIndex + 1) : frameUrlFor(maxFrame, frameIndex)
 
-  // Preload nearby frames so the hidden buffer is ready
+  // Preload nearby frames when idle (not during animation)
   useEffect(() => {
-    if (!useFrames || frameCount <= 0) return
+    if (!useFrames || frameCount <= 0 || isAnimating) return
     const max = frameCount - 1
     for (let k = 1; k <= PRELOAD_AHEAD; k++) {
       const next = frameIndex + k
       if (next > max) break
       const img = new Image()
-      img.src = frameUrl(next)
+      img.src = frameUrlFor(max, next)
     }
     for (let k = 1; k <= PRELOAD_AHEAD; k++) {
       const prev = frameIndex - k
       if (prev < 0) break
       const img = new Image()
-      img.src = frameUrl(prev)
+      img.src = frameUrlFor(max, prev)
     }
-  }, [useFrames, frameCount, frameIndex])
+  }, [useFrames, frameCount, frameIndex, isAnimating])
 
   // Video progress 0..1 for text transition (when using video fallback)
   useEffect(() => {
@@ -337,34 +432,40 @@ export function CinematicWarmHero() {
   return (
     <section className="relative h-dvh w-full overflow-hidden bg-black">
       {useFrames ? (
-        <>
-          <img
-            src={src0}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              opacity: showFirst ? 1 : 0,
-              zIndex: showFirst ? 1 : 0,
-              transform: "translateZ(0)",
-              backfaceVisibility: "hidden",
-            }}
-            fetchPriority="high"
-            draggable={false}
-          />
-          <img
-            src={src1}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              opacity: showFirst ? 0 : 1,
-              zIndex: showFirst ? 0 : 1,
-              transform: "translateZ(0)",
-              backfaceVisibility: "hidden",
-            }}
-            fetchPriority="high"
-            draggable={false}
-          />
-        </>
+        heroReady ? (
+          <>
+            <img
+              ref={img0Ref}
+              src={src0}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                opacity: showFirst ? 1 : 0,
+                zIndex: showFirst ? 1 : 0,
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden",
+              }}
+              fetchPriority="high"
+              draggable={false}
+            />
+            <img
+              ref={img1Ref}
+              src={src1}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                opacity: showFirst ? 0 : 1,
+                zIndex: showFirst ? 0 : 1,
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden",
+              }}
+              fetchPriority="high"
+              draggable={false}
+            />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-black" aria-hidden />
+        )
       ) : (
         <video
           ref={videoRef}
@@ -385,11 +486,12 @@ export function CinematicWarmHero() {
       <div className="absolute inset-0 flex items-center justify-center text-center px-5 sm:px-6 pointer-events-none">
         <div className="space-y-3 md:space-y-4">
           <div
+            ref={titleRef}
             className="space-y-0.5 md:space-y-1"
             style={{
               opacity: titleOpacity,
               transform: `translateY(${12 * (1 - titleOpacity)}px)`,
-              transition: "opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)",
+              transition: isAnimating ? "none" : "opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)",
             }}
           >
             <h1
@@ -412,13 +514,14 @@ export function CinematicWarmHero() {
             </h1>
           </div>
           <p
+            ref={subheaderRef}
             className="text-base md:text-2xl text-[#3f210c]/90 font-medium px-2"
             style={{
               fontFamily:
                 "var(--font-hero), 'Playfair Display', Georgia, serif",
               opacity: subheaderOpacity,
               transform: `translateY(${10 * (1 - subheaderOpacity)}px)`,
-              transition: "opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)",
+              transition: isAnimating ? "none" : "opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)",
             }}
           >
             {t("hero.subheader")}
