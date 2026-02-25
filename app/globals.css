@@ -158,6 +158,20 @@ html.lenis body {
   }
 }
 
+/* Initial load screen progress bar */
+@keyframes initial-load-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.initial-load-bar {
+  animation: initial-load-progress 5s linear forwards;
+}
+
 /* Add scrollbar-hide utility for horizontal scroll on mobile */
 @layer utilities {
   .scrollbar-hide {

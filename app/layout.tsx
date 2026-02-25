@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from "@/components/google-analytics"
 import AppProviders from "@/components/app-providers"
 import { LenisProvider } from "@/components/lenis-provider"
+import { InitialLoadScreen } from "@/components/initial-load-screen"
 import "./globals.css"
 
 // <CHANGE> Luxury display font for headings
@@ -72,7 +73,9 @@ export default function RootLayout({
     <html lang="es" className={`${playfair.variable} ${inter.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <AppProviders>
-          <LenisProvider>{children}</LenisProvider>
+          <InitialLoadScreen>
+            <LenisProvider>{children}</LenisProvider>
+          </InitialLoadScreen>
         </AppProviders>
         <Analytics />
         <GoogleAnalytics />
