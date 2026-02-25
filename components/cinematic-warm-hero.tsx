@@ -5,13 +5,8 @@ import { useLenis } from "@/components/lenis-provider"
 import { useLocale } from "@/contexts/locale-context"
 
 const DEFAULT_FRAME_COUNT = 439
-const TARGET_DURATION_MS = 3200
-const CACHE_SIZE = 80
-const LOAD_AHEAD = 45
-
-function frameUrl(max: number, i: number) {
-  return `/hero-frames/frame_${String(Math.min(max, Math.max(0, i))).padStart(4, "0")}.jpg`
-}
+const TARGET_DURATION_MS = 3200 // full sequence in 3.2 seconds
+const PRELOAD_AHEAD = 25 // preload this many frames ahead to avoid black flashes
 
 export function CinematicWarmHero() {
   const lenis = useLenis()
@@ -20,141 +15,157 @@ export function CinematicWarmHero() {
   const [frameIndex, setFrameIndex] = useState(0)
   const [locked, setLocked] = useState(true)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [heroReady, setHeroReady] = useState(false)
   const [videoProgress, setVideoProgress] = useState(0)
   const touchY = useRef(0)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const containerRef = useRef<HTMLElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rafRef = useRef<number>(0)
+  const playTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frameIndexRef = useRef(0)
-  const titleRef = useRef<HTMLDivElement>(null)
-  const subheaderRef = useRef<HTMLParagraphElement>(null)
-  const cacheRef = useRef<Map<number, HTMLImageElement>>(new Map())
-  const loadingRef = useRef<Set<number>>(new Set())
-  const animStartTimeRef = useRef(0)
-  const animStartFrameRef = useRef(0)
-  const animForwardRef = useRef(true)
-  const isAnimatingRef = useRef(false)
+  const hasScrolledPastRef = useRef(false)
+  const programmaticScrollRef = useRef(false)
   frameIndexRef.current = frameIndex
-  isAnimatingRef.current = isAnimating
-
-  const maxFrame = Math.max(0, (frameCount || 1) - 1)
 
   const stopPlayback = useCallback(() => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current)
-      rafRef.current = 0
+    if (playTimeoutRef.current) {
+      clearTimeout(playTimeoutRef.current)
+      playTimeoutRef.current = null
     }
     setIsAnimating(false)
   }, [])
 
   const playToEnd = useCallback(() => {
     stopPlayback()
-    if (frameIndexRef.current >= maxFrame) return
-    animStartTimeRef.current = performance.now()
-    animStartFrameRef.current = frameIndexRef.current
-    animForwardRef.current = true
-    isAnimatingRef.current = true
+    const n = frameCount || 1
+    const max = n - 1
+    const stepMs = max > 0 ? TARGET_DURATION_MS / max : 0
     setIsAnimating(true)
-  }, [stopPlayback, maxFrame])
+    const tick = (i: number) => {
+      if (i >= max) {
+        setIsAnimating(false)
+        return
+      }
+      const next = i + 1
+      setFrameIndex(next)
+      playTimeoutRef.current = setTimeout(() => tick(next), stepMs)
+    }
+    tick(frameIndexRef.current)
+  }, [frameCount, stopPlayback])
 
   const playToStart = useCallback(() => {
     stopPlayback()
-    if (frameIndexRef.current <= 0) return
-    animStartTimeRef.current = performance.now()
-    animStartFrameRef.current = frameIndexRef.current
-    animForwardRef.current = false
-    isAnimatingRef.current = true
+    const n = frameCount || 1
+    const max = n - 1
+    const stepMs = max > 0 ? TARGET_DURATION_MS / max : 0
     setIsAnimating(true)
-  }, [stopPlayback, maxFrame])
-
-  const scrollToNext = useCallback(() => {
-    const y = typeof window !== "undefined" ? window.innerHeight : 0
-    window.scrollTo({ top: y, behavior: "auto" })
-    if (lenis) {
-      lenis.start()
-      requestAnimationFrame(() => {
-        lenis.scrollTo(y, { force: true, duration: 0.1 })
-      })
+    const tick = (i: number) => {
+      if (i <= 0) {
+        setIsAnimating(false)
+        // After rewinding to start, scroll to very top if not already there
+        if (window.scrollY > 0) {
+          window.scrollTo({ top: 0, behavior: "smooth" })
+        }
+        return
+      }
+      const next = i - 1
+      setFrameIndex(next)
+      playTimeoutRef.current = setTimeout(() => tick(next), stepMs)
     }
-  }, [lenis])
+    tick(frameIndexRef.current)
+  }, [frameCount, stopPlayback])
 
   useEffect(() => {
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current)
     }
   }, [])
 
+  const scrollToNext = useCallback(() => {
+    hasScrolledPastRef.current = true
+    programmaticScrollRef.current = true
+    const y = typeof window !== "undefined" ? window.innerHeight : 0
+    if (lenis) {
+      lenis.start()
+      lenis.scrollTo(y, { lerp: 0.06, duration: 1.1 })
+    } else {
+      window.scrollTo({ top: y, behavior: "smooth" })
+    }
+    setTimeout(() => {
+      programmaticScrollRef.current = false
+    }, 1000)
+  }, [lenis])
+
+  // Ensure Lenis is stopped at the very top on load so hero controls from the start.
+  useEffect(() => {
+    if (!lenis) return
+    if (typeof window === "undefined") return
+    if (window.scrollY < 10) {
+      lenis.stop()
+    }
+  }, [lenis])
+
+  // Stop Lenis so hero can capture wheel events for the frame animation.
+  // When at the very top or in hero zone, stop Lenis to allow custom scroll handling.
   useEffect(() => {
     if (!lenis) return
     const onScroll = () => {
-      const y = typeof window !== "undefined" ? window.scrollY : 0
-      if (y < 10) {
+      const y = window.scrollY
+      // At very top - reset state and stop Lenis
+      if (y < 10 && !programmaticScrollRef.current) {
+        hasScrolledPastRef.current = false
         lenis.stop()
-      } else if (y < 80 && locked) {
+      }
+      // In hero zone (< 80px) - stop Lenis if we're locked (returned to hero)
+      else if (y < 80 && locked) {
         lenis.stop()
-      } else {
+      }
+      // Outside hero zone - let Lenis handle scrolling
+      else {
         lenis.start()
       }
     }
     onScroll()
-    const unsub = lenis.on("scroll", onScroll)
     window.addEventListener("scroll", onScroll, { passive: true })
-    return () => {
-      unsub()
-      window.removeEventListener("scroll", onScroll)
-    }
+    return () => window.removeEventListener("scroll", onScroll)
   }, [lenis, locked])
 
-  // Load meta and frame 0, then show hero so first paint is not black
   useEffect(() => {
-    const cache = cacheRef.current
     fetch("/hero-frames/meta.json")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d?.frameCount ?? DEFAULT_FRAME_COUNT)
-      .then((count) => {
-        setFrameCount(count)
-        const max = Math.max(0, count - 1)
-        return new Promise<void>((resolve) => {
-          const img = new Image()
-          img.onload = () => {
-            cache.set(0, img)
-            resolve()
-          }
-          img.onerror = () => resolve()
-          img.src = frameUrl(max, 0)
-        })
-      })
-      .then(() => setHeroReady(true))
-      .catch(() => setHeroReady(true))
+      .then((d) => d?.frameCount && setFrameCount(d.frameCount))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
     window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
   }, [])
-
-  useEffect(() => {
-    if (!isAnimating) frameIndexRef.current = frameIndex
-  }, [frameIndex, isAnimating])
 
   useEffect(() => {
     const onScroll = () => {
       if (!locked && window.scrollY < 80) {
         setLocked(true)
+        // Keep the frame at the last position - rewind will happen when user scrolls up
         setFrameIndex(Math.max(0, (frameCount || 1) - 1))
+      }
+      // When we reach the very top, reset frame to start
+      if (window.scrollY === 0 && frameIndex === 0) {
+        hasScrolledPastRef.current = false
       }
     }
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
-  }, [locked, frameCount])
+  }, [locked, frameCount, frameIndex])
 
   const onWheel = useCallback(
     (e: WheelEvent) => {
-      const scrollY = typeof window !== "undefined" ? window.scrollY : 0
-      if (scrollY > 100) return
+      // Only capture wheel when near the top of the page
+      if (window.scrollY > 100) return
       if (!locked) return
-      const max = (frameCount || 1) - 1
+      
+      const n = frameCount || 1
+      const max = n - 1
+      
+      // Scrolling down
       if (e.deltaY > 0) {
         if (isAnimating) {
           e.preventDefault()
@@ -168,7 +179,9 @@ export function CinematicWarmHero() {
           setLocked(false)
           scrollToNext()
         }
-      } else if (e.deltaY < 0) {
+      } 
+      // Scrolling up - rewind the video
+      else if (e.deltaY < 0) {
         if (isAnimating) {
           e.preventDefault()
           return
@@ -176,8 +189,8 @@ export function CinematicWarmHero() {
         if (frameIndex > 0) {
           e.preventDefault()
           playToStart()
-        } else if (scrollY > 0) {
-          e.preventDefault()
+        } else if (window.scrollY > 0) {
+          // Frame is at 0, allow scrolling to top of page
           window.scrollTo({ top: 0, behavior: "smooth" })
         }
       }
@@ -191,13 +204,19 @@ export function CinematicWarmHero() {
 
   const onTouchMove = useCallback(
     (e: TouchEvent) => {
-      const scrollY = typeof window !== "undefined" ? window.scrollY : 0
-      if (scrollY > 100) return
+      // Only capture touch when near the top of the page
+      if (window.scrollY > 100) return
       if (!locked) return
-      const max = (frameCount || 1) - 1
+      
+      const n = frameCount || 1
+      const max = n - 1
       const dy = touchY.current - e.touches[0].clientY
       touchY.current = e.touches[0].clientY
+      
+      // Require minimum swipe distance (reduced for better mobile responsiveness)
       if (Math.abs(dy) < 15) return
+      
+      // Swiping up (scrolling down) - play forward
       if (dy > 0) {
         if (isAnimating) {
           e.preventDefault()
@@ -211,7 +230,9 @@ export function CinematicWarmHero() {
           setLocked(false)
           scrollToNext()
         }
-      } else if (dy < 0) {
+      } 
+      // Swiping down (scrolling up) - rewind
+      else if (dy < 0) {
         if (isAnimating) {
           e.preventDefault()
           return
@@ -219,8 +240,8 @@ export function CinematicWarmHero() {
         if (frameIndex > 0) {
           e.preventDefault()
           playToStart()
-        } else if (scrollY > 0) {
-          e.preventDefault()
+        } else if (window.scrollY > 0) {
+          // Frame is at 0, allow scrolling to top of page
           window.scrollTo({ top: 0, behavior: "smooth" })
         }
       }
@@ -229,8 +250,8 @@ export function CinematicWarmHero() {
   )
 
   useEffect(() => {
-    window.addEventListener("wheel", onWheel, { passive: false, capture: true })
-    return () => window.removeEventListener("wheel", onWheel, true)
+    window.addEventListener("wheel", onWheel, { passive: false })
+    return () => window.removeEventListener("wheel", onWheel)
   }, [onWheel])
 
   useEffect(() => {
@@ -243,153 +264,29 @@ export function CinematicWarmHero() {
   }, [onTouchStart, onTouchMove])
 
   const useFrames = frameCount > 0
+  const src = useFrames
+    ? `/hero-frames/frame_${String(frameIndex).padStart(4, "0")}.jpg`
+    : ""
 
-  // Background loader: keep cache filled around current frame
+  // Preload upcoming frames so switching src doesn't show black (image already in cache)
   useEffect(() => {
-    if (!useFrames || !heroReady || maxFrame < 0) return
-    const cache = cacheRef.current
-    const loading = loadingRef.current
-
-    function loadFrame(i: number) {
-      if (i < 0 || i > maxFrame || cache.has(i) || loading.has(i)) return
-      loading.add(i)
+    if (!useFrames || frameCount <= 0) return
+    const max = frameCount - 1
+    for (let k = 1; k <= PRELOAD_AHEAD; k++) {
+      const next = frameIndex + k
+      if (next > max) break
       const img = new Image()
-      img.onload = () => {
-        loading.delete(i)
-        cache.set(i, img)
-        while (cache.size > CACHE_SIZE) {
-          const current = frameIndexRef.current
-          let bestKey = -1
-          let bestDist = -1
-          cache.forEach((_, key) => {
-            const dist = Math.abs(key - current)
-            if (bestKey === -1 || dist > bestDist) {
-              bestKey = key
-              bestDist = dist
-            }
-          })
-          if (bestKey >= 0) cache.delete(bestKey)
-        }
-      }
-      img.onerror = () => loading.delete(i)
-      img.src = frameUrl(maxFrame, i)
+      img.src = `/hero-frames/frame_${String(next).padStart(4, "0")}.jpg`
     }
-
-    loadFrame(1)
-    const interval = setInterval(() => {
-      const current = frameIndexRef.current
-      for (let k = 0; k <= LOAD_AHEAD; k++) {
-        loadFrame(current + k)
-        if (current - k >= 0) loadFrame(current - k)
-      }
-    }, 120)
-    return () => clearInterval(interval)
-  }, [useFrames, heroReady, maxFrame])
-
-  // Single rAF draw loop: canvas only, no img src thrashing
-  useEffect(() => {
-    if (!useFrames || !heroReady || maxFrame < 0) return
-    const cache = cacheRef.current
-
-    function getClosestFrame(want: number): number {
-      if (cache.has(want)) return want
-      for (let d = 1; d <= maxFrame; d++) {
-        if (cache.has(want - d)) return want - d
-        if (cache.has(want + d)) return want + d
-      }
-      return 0
+    for (let k = 1; k <= PRELOAD_AHEAD; k++) {
+      const prev = frameIndex - k
+      if (prev < 0) break
+      const img = new Image()
+      img.src = `/hero-frames/frame_${String(prev).padStart(4, "0")}.jpg`
     }
+  }, [useFrames, frameCount, frameIndex])
 
-    function draw() {
-      const container = containerRef.current
-      const canvas = canvasRef.current
-      if (!container || !canvas) {
-        rafRef.current = requestAnimationFrame(draw)
-        return
-      }
-      const rect = container.getBoundingClientRect()
-      const w = rect.width
-      const h = rect.height
-      if (w <= 0 || h <= 0) {
-        rafRef.current = requestAnimationFrame(draw)
-        return
-      }
-
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w
-        canvas.height = h
-      }
-
-      let current = frameIndexRef.current
-      if (isAnimatingRef.current) {
-        const elapsed = performance.now() - animStartTimeRef.current
-        const start = animStartFrameRef.current
-        if (animForwardRef.current) {
-          const remaining = maxFrame - start
-          const duration = TARGET_DURATION_MS * (remaining / maxFrame)
-          const progress = Math.min(1, elapsed / duration)
-          current = Math.min(maxFrame, start + Math.floor(progress * (remaining + 1)))
-          frameIndexRef.current = current
-          if (current >= maxFrame) {
-            frameIndexRef.current = maxFrame
-            isAnimatingRef.current = false
-            setFrameIndex(maxFrame)
-            setIsAnimating(false)
-          }
-        } else {
-          const duration = TARGET_DURATION_MS * (start / maxFrame)
-          const progress = Math.min(1, elapsed / duration)
-          current = Math.max(0, start - Math.floor(progress * (start + 1)))
-          frameIndexRef.current = current
-          if (current <= 0) {
-            frameIndexRef.current = 0
-            isAnimatingRef.current = false
-            setFrameIndex(0)
-            setIsAnimating(false)
-            if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: "smooth" })
-          }
-        }
-      } else {
-        current = frameIndexRef.current
-      }
-
-      const ctx = canvas.getContext("2d")
-      if (ctx) {
-        ctx.fillStyle = "#000"
-        ctx.fillRect(0, 0, w, h)
-        const img = cache.get(getClosestFrame(current))
-        if (img && img.complete && img.naturalWidth) {
-          ctx.imageSmoothingEnabled = true
-          ctx.imageSmoothingQuality = "high"
-          const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight)
-          const sw = img.naturalWidth
-          const sh = img.naturalHeight
-          const sx = (sw - w / scale) / 2
-          const sy = (sh - h / scale) / 2
-          ctx.drawImage(img, sx, sy, w / scale, h / scale, 0, 0, w, h)
-        }
-      }
-
-      const prog = current / Math.max(1, maxFrame)
-      const to = prog < 0.06 ? 0 : prog > 0.18 ? 1 : (prog - 0.06) / 0.12
-      const so = prog < 0.12 ? 0 : prog > 0.26 ? 1 : (prog - 0.12) / 0.14
-      if (titleRef.current) {
-        titleRef.current.style.opacity = String(to)
-        titleRef.current.style.transform = `translateY(${12 * (1 - to)}px)`
-      }
-      if (subheaderRef.current) {
-        subheaderRef.current.style.opacity = String(so)
-        subheaderRef.current.style.transform = `translateY(${10 * (1 - so)}px)`
-      }
-
-      rafRef.current = requestAnimationFrame(draw)
-    }
-    rafRef.current = requestAnimationFrame(draw)
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [useFrames, heroReady, maxFrame])
-
+  // Video progress 0..1 for text transition (when using video fallback)
   useEffect(() => {
     if (useFrames) return
     const video = videoRef.current
@@ -398,8 +295,17 @@ export function CinematicWarmHero() {
       const d = video.duration
       if (d && Number.isFinite(d)) setVideoProgress(video.currentTime / d)
     }
+    const onLoadedMetadata = () => {
+      const d = video.duration
+      if (d && Number.isFinite(d)) setVideoProgress(video.currentTime / d)
+    }
     video.addEventListener("timeupdate", onTimeUpdate)
-    return () => video.removeEventListener("timeupdate", onTimeUpdate)
+    video.addEventListener("loadedmetadata", onLoadedMetadata)
+    onLoadedMetadata()
+    return () => {
+      video.removeEventListener("timeupdate", onTimeUpdate)
+      video.removeEventListener("loadedmetadata", onLoadedMetadata)
+    }
   }, [useFrames])
 
   const progress = useFrames
@@ -409,24 +315,20 @@ export function CinematicWarmHero() {
   const subheaderOpacity = progress < 0.12 ? 0 : progress > 0.26 ? 1 : (progress - 0.12) / 0.14
 
   return (
-    <section
-      ref={containerRef}
-      className="relative h-dvh w-full overflow-hidden bg-black"
-    >
+    <section className="relative h-dvh w-full overflow-hidden bg-black [contain:strict]">
       {useFrames ? (
-        heroReady ? (
-          <canvas
-            ref={canvasRef}
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{ display: "block" }}
-          />
-        ) : (
-          <div className="absolute inset-0 bg-black" aria-hidden />
-        )
+        <img
+          src={src}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ willChange: "opacity" }}
+          fetchPriority="high"
+        />
       ) : (
         <video
           ref={videoRef}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ willChange: "transform" }}
           autoPlay
           loop
           muted
@@ -443,12 +345,11 @@ export function CinematicWarmHero() {
       <div className="absolute inset-0 flex items-center justify-center text-center px-5 sm:px-6 pointer-events-none">
         <div className="space-y-3 md:space-y-4">
           <div
-            ref={titleRef}
             className="space-y-0.5 md:space-y-1"
             style={{
               opacity: titleOpacity,
               transform: `translateY(${12 * (1 - titleOpacity)}px)`,
-              transition: isAnimating ? "none" : "opacity 0.7s ease, transform 0.7s ease",
+              transition: "opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)",
             }}
           >
             <h1
@@ -471,13 +372,13 @@ export function CinematicWarmHero() {
             </h1>
           </div>
           <p
-            ref={subheaderRef}
             className="text-base md:text-2xl text-[#3f210c]/90 font-medium px-2"
             style={{
-              fontFamily: "var(--font-hero), 'Playfair Display', Georgia, serif",
+              fontFamily:
+                "var(--font-hero), 'Playfair Display', Georgia, serif",
               opacity: subheaderOpacity,
               transform: `translateY(${10 * (1 - subheaderOpacity)}px)`,
-              transition: isAnimating ? "none" : "opacity 0.7s ease, transform 0.7s ease",
+              transition: "opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.7s cubic-bezier(0.25, 0.1, 0.25, 1)",
             }}
           >
             {t("hero.subheader")}
