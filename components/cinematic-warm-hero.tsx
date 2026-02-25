@@ -71,11 +71,13 @@ export function CinematicWarmHero() {
 
   const scrollToNext = useCallback(() => {
     const y = typeof window !== "undefined" ? window.innerHeight : 0
+    window.scrollTo({ top: y, behavior: "auto" })
     if (lenis) {
       lenis.start()
-      lenis.scrollTo(y, { force: true, duration: 0.2 })
+      requestAnimationFrame(() => {
+        lenis.scrollTo(y, { force: true, duration: 0.1 })
+      })
     }
-    window.scrollTo({ top: y, behavior: "smooth" })
   }, [lenis])
 
   useEffect(() => {
@@ -88,12 +90,16 @@ export function CinematicWarmHero() {
     if (!lenis) return
     const onScroll = () => {
       const y = typeof window !== "undefined" ? window.scrollY : 0
-      if (y < 10) lenis.stop()
-      else if (y < 80 && locked) lenis.stop()
-      else lenis.start()
+      if (y < 10) {
+        lenis.stop()
+      } else if (y < 80 && locked) {
+        lenis.stop()
+      } else {
+        lenis.start()
+      }
     }
     onScroll()
-    const unsub = lenis.on("scroll", () => onScroll())
+    const unsub = lenis.on("scroll", onScroll)
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => {
       unsub()
