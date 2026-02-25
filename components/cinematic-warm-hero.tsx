@@ -6,8 +6,8 @@ import { useLocale } from "@/contexts/locale-context"
 
 const DEFAULT_FRAME_COUNT = 439
 const TARGET_DURATION_MS = 3200 // full sequence in 3.2 seconds
-const PRELOAD_AHEAD = 40 // preload this many frames ahead
-const PRELOAD_INITIAL = 80 // preload first N frames on mount for smooth start
+const PRELOAD_AHEAD = 60 // preload this many frames ahead
+const PRELOAD_INITIAL = 120 // preload first N frames on mount for smooth start
 
 function frameUrlFor(max: number, i: number) {
   return `/hero-frames/frame_${String(Math.min(max, Math.max(0, i))).padStart(4, "0")}.jpg`
@@ -32,6 +32,7 @@ export function CinematicWarmHero() {
   const img1Ref = useRef<HTMLImageElement>(null)
   const titleRef = useRef<HTMLDivElement>(null)
   const subheaderRef = useRef<HTMLParagraphElement>(null)
+  const lastDrawnFrameRef = useRef(-1)
   frameIndexRef.current = frameIndex
 
   const stopPlayback = useCallback(() => {
@@ -48,6 +49,7 @@ export function CinematicWarmHero() {
     const max = n - 1
     const startFrame = frameIndexRef.current
     if (startFrame >= max) return
+    lastDrawnFrameRef.current = startFrame - 1
     setIsAnimating(true)
     const startTime = performance.now()
     const remaining = max - startFrame
@@ -57,40 +59,44 @@ export function CinematicWarmHero() {
       const progress = Math.min(1, elapsed / duration)
       const i = Math.min(max, startFrame + Math.floor(progress * (remaining + 1)))
       frameIndexRef.current = i
-      const img0 = img0Ref.current
-      const img1 = img1Ref.current
-      const titleEl = titleRef.current
-      const subEl = subheaderRef.current
-      if (img0 && img1) {
-        const showFirst = i % 2 === 0
-        const url = frameUrlFor(max, i)
-        const urlNext = frameUrlFor(max, i + 1)
-        if (showFirst) {
-          img0.src = url
-          img1.src = urlNext
-          img0.style.opacity = "1"
-          img1.style.opacity = "0"
-          img0.style.zIndex = "1"
-          img1.style.zIndex = "0"
-        } else {
-          img0.src = urlNext
-          img1.src = url
-          img0.style.opacity = "0"
-          img1.style.opacity = "1"
-          img0.style.zIndex = "0"
-          img1.style.zIndex = "1"
+      const maxStep = 2
+      const step = Math.min(maxStep, Math.max(0, i - lastDrawnFrameRef.current))
+      if (step > 0) {
+        const drawFrame = lastDrawnFrameRef.current + step
+        lastDrawnFrameRef.current = drawFrame
+        const img0 = img0Ref.current
+        const img1 = img1Ref.current
+        const titleEl = titleRef.current
+        const subEl = subheaderRef.current
+        if (img0 && img1) {
+          const showFirst = drawFrame % 2 === 0
+          if (showFirst) {
+            img0.style.opacity = "1"
+            img1.style.opacity = "0"
+            img0.style.zIndex = "1"
+            img1.style.zIndex = "0"
+            img0.src = frameUrlFor(max, drawFrame)
+            img1.src = frameUrlFor(max, drawFrame + 1)
+          } else {
+            img0.style.opacity = "0"
+            img1.style.opacity = "1"
+            img0.style.zIndex = "0"
+            img1.style.zIndex = "1"
+            img0.src = frameUrlFor(max, drawFrame + 1)
+            img1.src = frameUrlFor(max, drawFrame)
+          }
         }
-      }
-      const prog = i / Math.max(1, max)
-      const to = prog < 0.06 ? 0 : prog > 0.18 ? 1 : (prog - 0.06) / 0.12
-      const so = prog < 0.12 ? 0 : prog > 0.26 ? 1 : (prog - 0.12) / 0.14
-      if (titleEl) {
-        titleEl.style.opacity = String(to)
-        titleEl.style.transform = `translateY(${12 * (1 - to)}px)`
-      }
-      if (subEl) {
-        subEl.style.opacity = String(so)
-        subEl.style.transform = `translateY(${10 * (1 - so)}px)`
+        const prog = drawFrame / Math.max(1, max)
+        const to = prog < 0.06 ? 0 : prog > 0.18 ? 1 : (prog - 0.06) / 0.12
+        const so = prog < 0.12 ? 0 : prog > 0.26 ? 1 : (prog - 0.12) / 0.14
+        if (titleEl) {
+          titleEl.style.opacity = String(to)
+          titleEl.style.transform = `translateY(${12 * (1 - to)}px)`
+        }
+        if (subEl) {
+          subEl.style.opacity = String(so)
+          subEl.style.transform = `translateY(${10 * (1 - so)}px)`
+        }
       }
       if (i >= max) {
         setFrameIndex(max)
@@ -108,6 +114,7 @@ export function CinematicWarmHero() {
     const max = n - 1
     const startFrame = frameIndexRef.current
     if (startFrame <= 0) return
+    lastDrawnFrameRef.current = startFrame + 1
     setIsAnimating(true)
     const startTime = performance.now()
     const duration = TARGET_DURATION_MS * (startFrame / max)
@@ -116,40 +123,44 @@ export function CinematicWarmHero() {
       const progress = Math.min(1, elapsed / duration)
       const i = Math.max(0, startFrame - Math.floor(progress * (startFrame + 1)))
       frameIndexRef.current = i
-      const img0 = img0Ref.current
-      const img1 = img1Ref.current
-      const titleEl = titleRef.current
-      const subEl = subheaderRef.current
-      if (img0 && img1) {
-        const showFirst = i % 2 === 0
-        const url = frameUrlFor(max, i)
-        const urlNext = frameUrlFor(max, i + 1)
-        if (showFirst) {
-          img0.src = url
-          img1.src = urlNext
-          img0.style.opacity = "1"
-          img1.style.opacity = "0"
-          img0.style.zIndex = "1"
-          img1.style.zIndex = "0"
-        } else {
-          img0.src = urlNext
-          img1.src = url
-          img0.style.opacity = "0"
-          img1.style.opacity = "1"
-          img0.style.zIndex = "0"
-          img1.style.zIndex = "1"
+      const maxStep = 2
+      const step = Math.min(maxStep, Math.max(0, lastDrawnFrameRef.current - i))
+      if (step > 0) {
+        const drawFrame = lastDrawnFrameRef.current - step
+        lastDrawnFrameRef.current = drawFrame
+        const img0 = img0Ref.current
+        const img1 = img1Ref.current
+        const titleEl = titleRef.current
+        const subEl = subheaderRef.current
+        if (img0 && img1) {
+          const showFirst = drawFrame % 2 === 0
+          if (showFirst) {
+            img0.style.opacity = "1"
+            img1.style.opacity = "0"
+            img0.style.zIndex = "1"
+            img1.style.zIndex = "0"
+            img0.src = frameUrlFor(max, drawFrame)
+            img1.src = frameUrlFor(max, drawFrame + 1)
+          } else {
+            img0.style.opacity = "0"
+            img1.style.opacity = "1"
+            img0.style.zIndex = "0"
+            img1.style.zIndex = "1"
+            img0.src = frameUrlFor(max, drawFrame + 1)
+            img1.src = frameUrlFor(max, drawFrame)
+          }
         }
-      }
-      const prog = i / Math.max(1, max)
-      const to = prog < 0.06 ? 0 : prog > 0.18 ? 1 : (prog - 0.06) / 0.12
-      const so = prog < 0.12 ? 0 : prog > 0.26 ? 1 : (prog - 0.12) / 0.14
-      if (titleEl) {
-        titleEl.style.opacity = String(to)
-        titleEl.style.transform = `translateY(${12 * (1 - to)}px)`
-      }
-      if (subEl) {
-        subEl.style.opacity = String(so)
-        subEl.style.transform = `translateY(${10 * (1 - so)}px)`
+        const prog = drawFrame / Math.max(1, max)
+        const to = prog < 0.06 ? 0 : prog > 0.18 ? 1 : (prog - 0.06) / 0.12
+        const so = prog < 0.12 ? 0 : prog > 0.26 ? 1 : (prog - 0.12) / 0.14
+        if (titleEl) {
+          titleEl.style.opacity = String(to)
+          titleEl.style.transform = `translateY(${12 * (1 - to)}px)`
+        }
+        if (subEl) {
+          subEl.style.opacity = String(so)
+          subEl.style.transform = `translateY(${10 * (1 - so)}px)`
+        }
       }
       if (i <= 0) {
         setFrameIndex(0)
