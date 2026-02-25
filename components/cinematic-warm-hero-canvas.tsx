@@ -6,8 +6,8 @@ import { useLocale } from "@/contexts/locale-context"
 
 const DEFAULT_FRAME_COUNT = 439
 const TARGET_DURATION_MS = 3200
-const CACHE_SIZE = 50
-const LOAD_AHEAD = 30
+const CACHE_SIZE = 80
+const LOAD_AHEAD = 45
 
 function frameUrl(max: number, i: number) {
   return `/hero-frames/frame_${String(Math.min(max, Math.max(0, i))).padStart(4, "0")}.jpg`
@@ -262,13 +262,16 @@ export function CinematicWarmHeroCanvas() {
       img.src = frameUrl(maxFrame, i)
     }
 
+    // Load first frames immediately so first paint isn't black
+    loadFrame(0)
+    loadFrame(1)
     const interval = setInterval(() => {
       const current = frameIndexRef.current
       for (let k = 0; k <= LOAD_AHEAD; k++) {
         loadFrame(current + k)
         if (current - k >= 0) loadFrame(current - k)
       }
-    }, 150)
+    }, 120)
     return () => clearInterval(interval)
   }, [useFrames, heroReady, maxFrame])
 
@@ -336,8 +339,12 @@ export function CinematicWarmHeroCanvas() {
 
       const ctx = canvas.getContext("2d")
       if (ctx) {
+        ctx.fillStyle = "#000"
+        ctx.fillRect(0, 0, w, h)
         const img = cache.get(getClosestFrame(current))
         if (img && img.complete && img.naturalWidth) {
+          ctx.imageSmoothingEnabled = true
+          ctx.imageSmoothingQuality = "high"
           const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight)
           const sw = img.naturalWidth
           const sh = img.naturalHeight
