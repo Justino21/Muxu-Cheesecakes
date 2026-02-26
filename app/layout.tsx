@@ -71,6 +71,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${playfair.variable} ${inter.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <link rel="preload" href="/Muxu_new_hero2.mp4" as="video" type="video/mp4" />
+        <link rel="preload" href="/hero-frames/frame_0000.jpg" as="image" />
+      </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <AppProviders>
           <>
