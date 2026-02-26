@@ -34,18 +34,18 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://muxucheesecakes.com
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Muxu Cheesecake | Handcrafted Holiday Indulgence",
+  title: "Muxu Cheesecakes | Artisan Cheesecakes Made with Love",
   description:
-    "Premium handcrafted cheesecakes made with love. Limited edition holiday flavors available now. Experience the warmth of homemade luxury.",
+    "Artisan cheesecakes made with love. Premium ingredients, family recipes, and home delivery. Order your Muxu cheesecake in Madrid and enjoy the taste of homemade luxury.",
   generator: "v0.app",
-  keywords: ["cheesecake", "holiday dessert", "premium", "handcrafted", "Christmas", "gift"],
+  keywords: ["cheesecake", "artisan cheesecake", "Madrid", "home delivery", "handcrafted", "Muxu", "dessert"],
   icons: {
     icon: "/Muxu_Logo.png",
     apple: "/Muxu_Logo.png",
   },
   openGraph: {
-    title: "Muxu Cheesecake | Handcrafted Holiday Indulgence",
-    description: "Premium handcrafted cheesecakes made with love",
+    title: "Muxu Cheesecakes | Artisan Cheesecakes Made with Love",
+    description: "Artisan cheesecakes made with love. Premium ingredients, family recipes, home delivery in Madrid.",
     type: "website",
     images: [
       {
@@ -58,8 +58,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Muxu Cheesecake | Handcrafted Holiday Indulgence",
-    description: "Premium handcrafted cheesecakes made with love",
+    title: "Muxu Cheesecakes | Artisan Cheesecakes Made with Love",
+    description: "Artisan cheesecakes made with love. Premium ingredients, family recipes, home delivery in Madrid.",
     images: ["/Muxu_Logo.png"],
   },
 }
