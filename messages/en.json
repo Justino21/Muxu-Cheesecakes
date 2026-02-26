@@ -149,6 +149,7 @@
     "openInNewTab": "Open in new tab",
     "consentTitle": "Welcome to Muxu Cheesecakes",
     "consentMessage": "To use this website you must first read and accept our Terms of Use, Privacy Policy and Cookie Policy.",
+    "consentMessageShort": "Please read our Terms, Privacy and Cookie policy, then accept to continue.",
     "consentAccept": "I have read and accept"
   },
   "contact": {

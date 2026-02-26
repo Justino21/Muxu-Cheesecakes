@@ -248,15 +248,15 @@ export default function ContactPage() {
                   />
                   <span className="text-xs md:text-sm text-[#3f210c]/80">
                     {t("contact.termsLabel")}{" "}
-                    <Link href="/terms" className="underline hover:text-[#3f210c]">
+                    <Link href="/Muxu_Terms_of_Use.pdf" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
                       {t("contact.termsLink")}
                     </Link>
                     ,{" "}
-                    <Link href="/privacy" className="underline hover:text-[#3f210c]">
+                    <Link href="/Muxu_Privacy_Policy.pdf" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
                       {t("contact.privacyLink")}
                     </Link>{" "}
                     {t("contact.and")}{" "}
-                    <Link href="/cookies" className="underline hover:text-[#3f210c]">
+                    <Link href="/Muxu_Cookie_Policy.pdf" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
                       {t("contact.cookiesLink")}
                     </Link>
                     . <span className="text-red-500">*</span>
