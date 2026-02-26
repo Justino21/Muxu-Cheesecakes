@@ -142,6 +142,15 @@
       "soja": "May contain soy derivatives in some flavours (white chocolate, Oreo, Lotus, Suchard)."
     }
   },
+  "legal": {
+    "termsTitle": "Terms of Use",
+    "privacyTitle": "Privacy Policy",
+    "cookiesTitle": "Cookie Policy",
+    "openInNewTab": "Open in new tab",
+    "consentTitle": "Welcome to Muxu Cheesecakes",
+    "consentMessage": "To use this website you must first read and accept our Terms of Use, Privacy Policy and Cookie Policy.",
+    "consentAccept": "I have read and accept"
+  },
   "contact": {
     "title": "Get in Touch",
     "subtitle": "Have questions about our cheesecakes? Want to place a custom order? We'd love to hear from you!",

@@ -142,6 +142,15 @@
       "soja": "Puede contener derivados de soja en algunos sabores (chocolate blanco, Oreo, Lotus, Suchard)."
     }
   },
+  "legal": {
+    "termsTitle": "Términos de uso",
+    "privacyTitle": "Política de privacidad",
+    "cookiesTitle": "Política de cookies",
+    "openInNewTab": "Abrir en nueva pestaña",
+    "consentTitle": "Bienvenido a Muxu Cheesecakes",
+    "consentMessage": "Para usar esta web debes leer y aceptar nuestros Términos de uso, Política de privacidad y Política de cookies.",
+    "consentAccept": "He leído y acepto"
+  },
   "contact": {
     "title": "Contáctanos",
     "subtitle": "¿Tienes preguntas sobre nuestras cheesecakes? ¿Quieres hacer un pedido personalizado? ¡Nos encantaría saber de ti!",

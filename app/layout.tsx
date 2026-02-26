@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Playfair_Display, Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from "@/components/google-analytics"
+import { ConsentBanner } from "@/components/consent-banner"
 import AppProviders from "@/components/app-providers"
 import { LenisProvider } from "@/components/lenis-provider"
 import "./globals.css"
@@ -72,7 +73,10 @@ export default function RootLayout({
     <html lang="es" className={`${playfair.variable} ${inter.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <AppProviders>
-          <LenisProvider>{children}</LenisProvider>
+          <>
+            <LenisProvider>{children}</LenisProvider>
+            <ConsentBanner />
+          </>
         </AppProviders>
         <Analytics />
         <GoogleAnalytics />
