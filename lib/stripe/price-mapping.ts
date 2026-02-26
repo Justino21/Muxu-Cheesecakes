@@ -5,24 +5,24 @@
  */
 export const STRIPE_PRODUCT_MAP: Record<string, { productId: string; size?: string }[]> = {
   "classic-new-york": [
-    { productId: "prod_U0HHNXDULeXr1b", size: "Mediana" },
-    { productId: "prod_U0HifPKFWdVVJh", size: "Grande" },
+    { productId: "prod_U3CTfVp0gjSTLs", size: "Mediana" },
+    { productId: "prod_U3CTQOCjPtTfaM", size: "Grande" },
   ],
   "white-chocolate": [
-    { productId: "prod_U0HkOsSXXldAoP", size: "Mediana" },
-    { productId: "prod_U0HmFHVuXVUSJk", size: "Grande" },
+    { productId: "prod_U3CTpXysUJ23E8", size: "Mediana" },
+    { productId: "prod_U3CTVy2b6NbQrR", size: "Grande" },
   ],
   lotus: [
-    { productId: "prod_U0HnHsBK0HmfDY", size: "Mediana" },
-    { productId: "prod_U0HnRKZa3jjjBc", size: "Grande" },
+    { productId: "prod_U3CT5CEeKeV0Al", size: "Mediana" },
+    { productId: "prod_U3CT1AGp3qNKvV", size: "Grande" },
   ],
   oreo: [
-    { productId: "prod_U0HpZTONZrWEaT", size: "Mediana" },
-    { productId: "prod_U0HqVmxHpcsHZw", size: "Grande" },
+    { productId: "prod_U3CTKwyTz3EUD2", size: "Mediana" },
+    { productId: "prod_U3CTuvwLLzhV8J", size: "Grande" },
   ],
   pistachio: [
-    { productId: "prod_U0HsrrZAeTWZ9G", size: "Mediana" },
-    { productId: "prod_U0HsGAjt2FBKrb", size: "Grande" },
+    { productId: "prod_U3CTVB7LeOCfBu", size: "Mediana" },
+    { productId: "prod_U3CT4BjSskoLSb", size: "Grande" },
   ],
 }
 
