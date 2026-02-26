@@ -336,6 +336,7 @@ export function CinematicWarmHero() {
           muted
           playsInline
           preload="auto"
+          poster="/hero-frames/frame_0000.jpg"
           onCanPlayThrough={(e) => {
             if (videoPlayFallbackRef.current) {
               clearTimeout(videoPlayFallbackRef.current)
