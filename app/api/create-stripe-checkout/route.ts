@@ -21,12 +21,20 @@ export async function POST(request: NextRequest) {
     const stripe = new Stripe(secret)
     const body = await request.json()
 
-    const baseUrl =
+    let baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.VERCEL_URL ||
       (request.headers.get("x-forwarded-host")
         ? `${request.headers.get("x-forwarded-proto") || "https"}://${request.headers.get("x-forwarded-host")}`
-        : "http://localhost:3000")
+        : null)
+    if (!baseUrl && process.env.VERCEL_URL) {
+      baseUrl = `https://${process.env.VERCEL_URL}`
+    }
+    if (!baseUrl) {
+      baseUrl = "http://localhost:3000"
+    }
+    if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+      baseUrl = `https://${baseUrl}`
+    }
 
     let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
 
