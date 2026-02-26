@@ -11,6 +11,7 @@ import { useLocale } from "@/contexts/locale-context"
 import { useLenis } from "@/components/lenis-provider"
 import Link from "next/link"
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile"
+import { getLegalPdfUrl } from "@/lib/legal-pdfs"
 
 const COUNTRY_CODES = [
   { code: "+34", flag: "🇪🇸", name: "Spain" },
@@ -248,15 +249,15 @@ export default function ContactPage() {
                   />
                   <span className="text-xs md:text-sm text-[#3f210c]/80">
                     {t("contact.termsLabel")}{" "}
-                    <Link href="/Muxu_Terms_of_Use.pdf" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
+                    <Link href={getLegalPdfUrl("terms", locale)} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
                       {t("contact.termsLink")}
                     </Link>
                     ,{" "}
-                    <Link href="/Muxu_Privacy_Policy.pdf" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
+                    <Link href={getLegalPdfUrl("privacy", locale)} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
                       {t("contact.privacyLink")}
                     </Link>{" "}
                     {t("contact.and")}{" "}
-                    <Link href="/Muxu_Cookie_Policy.pdf" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
+                    <Link href={getLegalPdfUrl("cookies", locale)} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3f210c]">
                       {t("contact.cookiesLink")}
                     </Link>
                     . <span className="text-red-500">*</span>

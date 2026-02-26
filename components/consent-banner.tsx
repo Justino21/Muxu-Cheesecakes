@@ -2,17 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { useLocale } from "@/contexts/locale-context"
+import { getLegalPdfUrl } from "@/lib/legal-pdfs"
 
 const STORAGE_KEY = "muxu_consent_accepted"
 
-const PDF_LINKS = [
-  { href: "/Muxu_Terms_of_Use.pdf", key: "termsTitle" as const },
-  { href: "/Muxu_Privacy_Policy.pdf", key: "privacyTitle" as const },
-  { href: "/Muxu_Cookie_Policy.pdf", key: "cookiesTitle" as const },
-]
+const DOC_KEYS = ["terms", "privacy", "cookies"] as const
 
 export function ConsentBanner() {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const [accepted, setAccepted] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -42,15 +39,15 @@ export function ConsentBanner() {
           {t("legal.consentMessageShort")}
         </p>
         <div className="flex flex-wrap justify-center gap-2 mb-4 text-xs">
-          {PDF_LINKS.map(({ href, key }) => (
+          {DOC_KEYS.map((doc) => (
             <a
-              key={key}
-              href={href}
+              key={doc}
+              href={getLegalPdfUrl(doc, locale)}
               target="_blank"
               rel="noopener noreferrer"
               className="underline text-[#3f210c] hover:no-underline"
             >
-              {t(`legal.${key}`)}
+              {t(`legal.${doc}Title`)}
             </a>
           ))}
         </div>

@@ -5,12 +5,11 @@ import HeaderWithLogo from "@/components/header-with-logo"
 import { CinematicFooter } from "@/components/cinematic-footer"
 import { useLenis } from "@/components/lenis-provider"
 import { useLocale } from "@/contexts/locale-context"
-
-const PDF_URL = "/Muxu_Privacy_Policy.pdf"
+import { getLegalPdfUrl } from "@/lib/legal-pdfs"
 
 export default function PrivacyPage() {
   const lenis = useLenis()
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
 
   useEffect(() => {
     if (lenis) lenis.start()
@@ -25,7 +24,7 @@ export default function PrivacyPage() {
             {t("legal.privacyTitle")}
           </h1>
           <a
-            href={PDF_URL}
+            href={getLegalPdfUrl("privacy", locale)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block text-[#3f210c] font-medium underline hover:no-underline"

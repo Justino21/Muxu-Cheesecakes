@@ -2,9 +2,10 @@
 
 import { Instagram } from "lucide-react"
 import { useLocale } from "@/contexts/locale-context"
+import { getLegalPdfUrl } from "@/lib/legal-pdfs"
 
 export function CinematicFooter() {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   return (
     <footer className="relative bg-[#fdebea] border-t border-[#3f210c]/15 overflow-hidden">
       <div
@@ -84,13 +85,13 @@ export function CinematicFooter() {
         <div className="pt-3 mt-3 border-t border-[#3f210c]/15 flex flex-col md:flex-row items-center justify-between gap-2">
           <p className="text-[10px] text-[#3f210c]/70">{t("footer.copyright")}</p>
           <nav className="flex gap-3">
-            <a href="/Muxu_Terms_of_Use.pdf" target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#3f210c]/70 hover:text-[#3f210c] transition-colors">
+            <a href={getLegalPdfUrl("terms", locale)} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#3f210c]/70 hover:text-[#3f210c] transition-colors">
               {t("footer.terms")}
             </a>
-            <a href="/Muxu_Privacy_Policy.pdf" target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#3f210c]/70 hover:text-[#3f210c] transition-colors">
+            <a href={getLegalPdfUrl("privacy", locale)} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#3f210c]/70 hover:text-[#3f210c] transition-colors">
               {t("footer.privacy")}
             </a>
-            <a href="/Muxu_Cookie_Policy.pdf" target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#3f210c]/70 hover:text-[#3f210c] transition-colors">
+            <a href={getLegalPdfUrl("cookies", locale)} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#3f210c]/70 hover:text-[#3f210c] transition-colors">
               {t("footer.cookies")}
             </a>
           </nav>
