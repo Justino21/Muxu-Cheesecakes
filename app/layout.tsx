@@ -36,16 +36,16 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Muxu Cheesecakes | Artisan Cheesecakes Made with Love",
   description:
-    "Artisan cheesecakes made with love. Premium ingredients, family recipes, and home delivery. Order your Muxu cheesecake in Madrid and enjoy the taste of homemade luxury.",
+    "Artisan cheesecakes made with love. Premium ingredients, family recipes, and home delivery. Order your Muxu cheesecake in Madrid or San Diego and enjoy the taste of homemade luxury.",
   generator: "v0.app",
-  keywords: ["cheesecake", "artisan cheesecake", "Madrid", "home delivery", "handcrafted", "Muxu", "dessert"],
+  keywords: ["cheesecake", "artisan cheesecake", "Madrid", "San Diego", "home delivery", "handcrafted", "Muxu", "dessert"],
   icons: {
     icon: "/Muxu_Logo.png",
     apple: "/Muxu_Logo.png",
   },
   openGraph: {
     title: "Muxu Cheesecakes | Artisan Cheesecakes Made with Love",
-    description: "Artisan cheesecakes made with love. Premium ingredients, family recipes, home delivery in Madrid.",
+    description: "Artisan cheesecakes made with love. Premium ingredients, family recipes, home delivery in Madrid & San Diego.",
     type: "website",
     images: [
       {
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Muxu Cheesecakes | Artisan Cheesecakes Made with Love",
-    description: "Artisan cheesecakes made with love. Premium ingredients, family recipes, home delivery in Madrid.",
+    description: "Artisan cheesecakes made with love. Premium ingredients, family recipes, home delivery in Madrid & San Diego.",
     images: ["/Muxu_Logo.png"],
   },
 }
