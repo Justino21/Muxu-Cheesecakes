@@ -19,6 +19,7 @@ export function CinematicWarmHero() {
   const touchY = useRef(0)
   const videoRef = useRef<HTMLVideoElement>(null)
   const playTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const videoPlayFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frameIndexRef = useRef(0)
   const hasScrolledPastRef = useRef(false)
   const programmaticScrollRef = useRef(false)
@@ -75,6 +76,7 @@ export function CinematicWarmHero() {
   useEffect(() => {
     return () => {
       if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current)
+      if (videoPlayFallbackRef.current) clearTimeout(videoPlayFallbackRef.current)
     }
   }, [])
 
@@ -333,9 +335,25 @@ export function CinematicWarmHero() {
           loop
           muted
           playsInline
+          preload="auto"
+          onCanPlayThrough={(e) => {
+            if (videoPlayFallbackRef.current) {
+              clearTimeout(videoPlayFallbackRef.current)
+              videoPlayFallbackRef.current = null
+            }
+            const v = e.currentTarget
+            v.playbackRate = 0.85
+            v.play().catch(() => {})
+          }}
           onLoadedData={(e) => {
-            e.currentTarget.playbackRate = 0.85
-            e.currentTarget.play().catch(() => {})
+            const v = e.currentTarget
+            if (v.readyState >= 3) return
+            if (videoPlayFallbackRef.current) return
+            videoPlayFallbackRef.current = setTimeout(() => {
+              videoPlayFallbackRef.current = null
+              v.playbackRate = 0.85
+              v.play().catch(() => {})
+            }, 2500)
           }}
         >
           <source src="/Muxu_new_hero2.mp4" type="video/mp4" />
