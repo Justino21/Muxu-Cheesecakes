@@ -6,8 +6,7 @@ import { useLocale } from "@/contexts/locale-context"
 
 const DEFAULT_FRAME_COUNT = 439
 const TARGET_DURATION_MS = 3200 // full sequence in 3.2 seconds
-const PRELOAD_AHEAD = 12 // preload ahead/behind to avoid black flashes (reduced for perf)
-const STATE_UPDATE_EVERY_N_FRAMES = 4 // throttle React state so we don't re-render every frame
+const PRELOAD_AHEAD = 25 // preload this many frames ahead to avoid black flashes
 
 export function CinematicWarmHero() {
   const lenis = useLenis()
@@ -19,7 +18,6 @@ export function CinematicWarmHero() {
   const [videoProgress, setVideoProgress] = useState(0)
   const touchY = useRef(0)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const imgRef = useRef<HTMLImageElement>(null)
   const playTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const videoPlayFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frameIndexRef = useRef(0)
@@ -44,13 +42,10 @@ export function CinematicWarmHero() {
     const tick = (i: number) => {
       if (i >= max) {
         setIsAnimating(false)
-        setFrameIndex(max)
         return
       }
       const next = i + 1
-      frameIndexRef.current = next
-      if (imgRef.current) imgRef.current.src = `/hero-frames/frame_${String(next).padStart(4, "0")}.jpg`
-      if (next % STATE_UPDATE_EVERY_N_FRAMES === 0 || next === max) setFrameIndex(next)
+      setFrameIndex(next)
       playTimeoutRef.current = setTimeout(() => tick(next), stepMs)
     }
     tick(frameIndexRef.current)
@@ -65,17 +60,14 @@ export function CinematicWarmHero() {
     const tick = (i: number) => {
       if (i <= 0) {
         setIsAnimating(false)
-        setFrameIndex(0)
-        if (imgRef.current) imgRef.current.src = "/hero-frames/frame_0000.jpg"
+        // After rewinding to start, scroll to very top if not already there
         if (window.scrollY > 0) {
           window.scrollTo({ top: 0, behavior: "smooth" })
         }
         return
       }
       const next = i - 1
-      frameIndexRef.current = next
-      if (imgRef.current) imgRef.current.src = `/hero-frames/frame_${String(next).padStart(4, "0")}.jpg`
-      if (next % STATE_UPDATE_EVERY_N_FRAMES === 0 || next === 0) setFrameIndex(next)
+      setFrameIndex(next)
       playTimeoutRef.current = setTimeout(() => tick(next), stepMs)
     }
     tick(frameIndexRef.current)
@@ -328,13 +320,11 @@ export function CinematicWarmHero() {
     <section className="relative h-dvh w-full overflow-hidden bg-black [contain:strict]">
       {useFrames ? (
         <img
-          ref={imgRef}
           src={src}
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           style={{ willChange: "opacity" }}
           fetchPriority="high"
-          decoding="async"
         />
       ) : (
         <video
