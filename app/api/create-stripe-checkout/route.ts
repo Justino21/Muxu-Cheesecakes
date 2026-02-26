@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
-      payment_method_types: ["card", "apple_pay"],
+      payment_method_types: ["card"],
       success_url: `${baseUrl}/?checkout=success`,
       cancel_url: `${baseUrl}/?checkout=cancelled`,
     })
